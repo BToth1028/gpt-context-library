@@ -42,6 +42,10 @@ gpt/
 
 ## Quick Start
 
+**For detailed step-by-step instructions, see [WORKFLOW.md](../_admin/WORKFLOW.md)**
+
+### TL;DR
+
 ### When Cursor Creates a Summary:
 
 1. **Say**: "Give me a GPT summary"
