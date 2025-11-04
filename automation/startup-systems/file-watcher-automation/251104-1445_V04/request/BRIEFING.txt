@@ -1,0 +1,56 @@
+**Target path:** C:\DEV\docs\gpt\automation\startup-systems\file-watcher-automation\251104-1445_V04\response
+
+# GPT Briefing - File Watcher V04
+
+**Date:** 2025-11-04 14:45
+**Topic:** Simple Stability Check - Code Snippets Only
+**Previous Versions:** V01/V02 (over-engineered), V03 (same issue)
+
+## What We Have That Works
+
+Our simple polling watcher successfully detects and moves GPT response files. See attached `gpt-response-watcher.ps1`:
+- Polls Downloads every 2 seconds
+- Finds `GPT_RESPONSE.md`
+- Reads target path from file
+- Moves file and exits
+- ~150 lines, simple and reliable
+
+**This code works. We want to keep it simple.**
+
+## What We Need
+
+Add ONE small improvement: verify file is fully written before moving it.
+
+Provide:
+1. A `Test-FileStable` function that checks if file size stops changing
+2. Show exactly where to add it in the existing code
+3. Brief explanation (2-3 sentences)
+
+## Example Format We Want
+
+```powershell
+# Add this function after line 42 (after other functions):
+function Test-FileStable([string]$path, [int]$waitMs = 500) {
+    # Check file size twice with delay
+    # Return true if stable, false otherwise
+}
+
+# In the polling loop around line 110, add this check:
+if (Test-Path $targetFile) {
+    if (-not (Test-FileStable $targetFile)) {
+        continue  # Still writing, check again
+    }
+    # Continue with existing move logic...
+}
+```
+
+## What We DON'T Want
+
+- Complete script rewrites
+- Enterprise architecture (queues, timers, health checks, JSONL logging)
+- Scheduled tasks
+- Test suites
+- Complex git sync changes
+
+Give us a focused, simple solution. Code snippets, not rewrites.
+
