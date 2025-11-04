@@ -1,0 +1,157 @@
+═══════════════════════════════════════════════════════════════════════════
+GPT BRIEFING REQUEST
+═══════════════════════════════════════════════════════════════════════════
+Topic:          [Specific topic name]
+Category:       [tier1] > [tier2] > [tier3]
+Date:           YYYY-MM-DD
+Time:           HH:MM
+Version:        VXX
+Status:         [Active/Blocked/In Progress/Resolved]
+Request Type:   [Bug Fix/Feature/Analysis/Optimization/Other]
+═══════════════════════════════════════════════════════════════════════════
+
+## GOAL
+───────────────────────────────────────────────────────────────────────────
+[Single clear sentence describing what we're trying to achieve]
+
+
+## SYSTEM ARCHITECTURE
+───────────────────────────────────────────────────────────────────────────
+[High-level overview of the components/services/system involved]
+
+### Component 1: [Name]
+[Brief description]
+
+### Component 2: [Name]
+[Brief description]
+
+
+## WHAT WE BUILT
+───────────────────────────────────────────────────────────────────────────
+- **filename.ext** - Purpose/description
+- **another.file** - Purpose/description
+
+### Supporting Files
+- [List any configs, scripts, etc.]
+
+
+## CURRENT ISSUES
+───────────────────────────────────────────────────────────────────────────
+
+### Issue 1: [Descriptive Name]
+──────────────────────────────────────────────────────────────────────────
+**PROBLEM:**
+[Clear description of what's broken]
+
+**SUSPECT CODE:**
+File: [filename.ext]
+Lines: [XX-YY]
+
+```[language]
+[Exact code with proper formatting]
+```
+
+**WHY:**
+[Root cause explanation]
+
+**ATTEMPTED FIXES:**
+1. [What was tried]
+   Result: [What happened]
+2. [Second attempt]
+   Result: [What happened]
+
+**STATUS:** [Current state]
+
+
+### Issue 2: [Name]
+──────────────────────────────────────────────────────────────────────────
+[Repeat structure for additional issues]
+
+
+## WHAT WORKS
+───────────────────────────────────────────────────────────────────────────
+✅ **[Feature/Component]** - Brief note on what's working
+✅ **[Another Feature]** - Note
+✅ **[Third Feature]** - Note
+
+❌ **[Broken Feature]** - What's not working yet
+❌ **[Another Broken]** - Status
+
+
+## DESIRED BEHAVIOR
+───────────────────────────────────────────────────────────────────────────
+1. **Step 1:** [Description]
+2. **Step 2:** [Description]
+3. **Step 3:** [Description]
+4. **Result:** [Expected outcome]
+
+
+## TECHNICAL CONSTRAINTS
+───────────────────────────────────────────────────────────────────────────
+- **Operating System**: Windows 10/11
+- **Shell**: PowerShell / Batch
+- **Dependencies**: [List key requirements]
+- **Versions**: [Specific version constraints]
+- **Limitations**: [Known platform/tool limitations]
+
+
+## KEY FILE LOCATIONS
+───────────────────────────────────────────────────────────────────────────
+```
+Root/
+├── category/
+│   ├── important-file.ext     # What it does
+│   └── another.file           # Purpose
+└── other-category/
+    └── file.ext
+```
+
+
+## WHAT GPT SHOULD FOCUS ON
+───────────────────────────────────────────────────────────────────────────
+1. **[Highest Priority]**
+   Why: [Explanation]
+
+2. **[Second Priority]**
+   Why: [Explanation]
+
+3. **[Third Priority]**
+   Why: [Explanation]
+
+
+## MY RECOMMENDATIONS
+───────────────────────────────────────────────────────────────────────────
+
+### To Fix Current Issues:
+1. [Specific recommendation with reasoning]
+2. [Second recommendation]
+3. [Third recommendation]
+
+### To Improve Overall:
+1. [Enhancement suggestion]
+2. [Another improvement]
+3. [Additional idea]
+
+
+## SUCCESS CRITERIA
+───────────────────────────────────────────────────────────────────────────
+- [ ] [Specific measurable outcome]
+- [ ] [Another testable result]
+- [ ] [Final acceptance criteria]
+
+
+## ADDITIONAL CONTEXT
+───────────────────────────────────────────────────────────────────────────
+[Any other relevant information that doesn't fit above categories]
+
+
+## RELATED DOCUMENTATION
+───────────────────────────────────────────────────────────────────────────
+- **ADR**: docs/architecture/decisions/[filename].md
+- **Guide**: docs/guides/[filename].md
+- **Previous Version**: [Link if this is V02+]
+
+
+═══════════════════════════════════════════════════════════════════════════
+END OF BRIEFING
+═══════════════════════════════════════════════════════════════════════════

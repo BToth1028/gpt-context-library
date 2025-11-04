@@ -1,0 +1,42 @@
+# Ignore sensitive or local data
+*.env
+*.key
+*.pem
+*.p12
+*password*
+*secret*
+*token*
+*credential*
+
+# Ignore personal/private notes
+PRIVATE_*
+_private/
+_local/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temp files
+*.tmp
+*.temp
+*.log
+
+# Large files
+*.zip
+*.tar.gz
+*.7z
+*.rar
+
+# Except our zip folders (they're for documentation)
+!**/zip/
+!**/zip/*.md
+!**/zip/*.txt
