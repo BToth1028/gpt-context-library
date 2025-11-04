@@ -1,0 +1,330 @@
+================================================================================
+ERROR LOG: Project Context OS Startup Issues
+================================================================================
+
+Date: November 4, 2025
+Context: Iterative development of start-all.bat
+
+================================================================================
+ERROR 1: Terminal Closes Immediately
+================================================================================
+USER REPORT: "I clicked the start and a terminal opened and closed"
+
+SYMPTOM:
+  - start-all.bat executed
+  - Window flashed and disappeared
+  - No error message visible
+
+CAUSE:
+  - Batch file exited before user could see output
+  - No pause or cmd /k to keep window open
+
+FIX:
+  - Added 'pause' commands at end
+  - Changed service windows to use 'cmd /k' instead of 'cmd /c'
+  - Keeps terminal open for debugging
+
+================================================================================
+ERROR 2: Docker Not Starting Automatically
+================================================================================
+USER REPORT: "its telling me to start docker. why cant you start docker as 
+part of this process"
+
+SYMPTOM:
+  - Script shows message: "Please start Docker Desktop manually"
+  - Exits instead of starting Docker
+
+CAUSE:
+  - No logic to launch Docker Desktop
+  - Only checked if Docker was running
+
+FIX:
+  - Added Docker Desktop launcher:
+    start "" "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+  - Added polling loop to wait for Docker to be ready
+
+================================================================================
+ERROR 3: Docker Started But Script Said It Didn't
+================================================================================
+USER REPORT: "I got this error but docker DID start"
+
+SYMPTOM:
+  - Docker Desktop launched successfully
+  - Script still showed error: "Docker did not start"
+  - Timing issue
+
+CAUSE:
+  - Script checked 'docker info' too quickly after launch
+  - Docker Desktop takes 15-20 seconds to initialize
+
+FIX:
+  - Added 20-second initial wait
+  - Then poll every 3 seconds for up to 2 minutes
+
+================================================================================
+ERROR 4: Too Much Waiting
+================================================================================
+USER REPORT: "I wouldnt do a blanket time wait. You need to check if its running."
+
+SYMPTOM:
+  - 20-second blanket wait every time
+  - Even if Docker already running
+
+CAUSE:
+  - Over-correction from previous issue
+  - Wait was before the check, not after
+
+FIX:
+  - Check Docker status FIRST
+  - If already running, skip wait entirely
+  - If not running, launch and poll immediately (no blanket wait)
+
+================================================================================
+ERROR 5: Port Conflicts
+================================================================================
+USER REPORT: "error: bind: address already in use: listen tcp 0.0.0.0:8080"
+
+SYMPTOM:
+  - Structurizr failed to start
+  - Port 8080 already in use (later changed to 8081, same issue)
+
+CAUSE:
+  - Old Structurizr containers still running from previous sessions
+  - No cleanup before starting new services
+
+FIX:
+  - Added cleanup section at start of script
+  - Kill processes on ports 8000, 3000, 7007
+  - Stop Docker containers
+  - Find and remove ALL Structurizr containers
+
+================================================================================
+ERROR 6: Backstage Yarn Not Found
+================================================================================
+ERROR MESSAGE:
+  'yarn' is not recognized as an internal or external command
+
+SYMPTOM:
+  - Backstage failed to start
+  - Global Yarn 1.22.22 found but conflicted with Backstage
+
+CAUSE:
+  - Backstage uses Yarn 4.4.1 via Corepack
+  - Global Yarn installation caused confusion
+
+FIX:
+  - Use Backstage's bundled Yarn directly:
+    node .yarn\releases\yarn-4.4.1.cjs start
+  - Added prerequisite check for bundled Yarn
+
+================================================================================
+ERROR 7: Wrong Backstage Script
+================================================================================
+ERROR MESSAGE: (from yarn)
+  "Error: Command 'dev' not found"
+
+SYMPTOM:
+  - 'yarn dev' failed
+  - Backstage wouldn't start
+
+CAUSE:
+  - Backstage package.json defines 'start', not 'dev'
+
+FIX:
+  - Changed command from 'yarn dev' to 'yarn start'
+
+================================================================================
+ERROR 8: Wrong Port Opened
+================================================================================
+USER REPORT: "port 3000 should be showing data? looks empty. port 7007 is 
+showing it cant be found."
+
+SYMPTOM:
+  - Browser opened port 7007 (Backstage backend API)
+  - Port 3000 (frontend) not opened
+  - Port 8081 (Structurizr) not opened
+
+CAUSE:
+  - Copied wrong port from earlier draft
+  - Missing port 8081 opening
+
+FIX:
+  - Changed to port 3000 for Backstage
+  - Added port 8081 opening for Structurizr
+  - Increased initial delay to 15 seconds
+
+================================================================================
+ERROR 9: Structurizr Container Unhealthy
+================================================================================
+USER REPORT: "I restarted everything and 8081 didnt open at all"
+
+DOCKER STATUS:
+  relaxed_jemison    Up About a minute (health: starting)
+
+SYMPTOM:
+  - Structurizr container running but unhealthy
+  - Port 8081 not responding
+  - Browser never opened the URL
+
+CAUSE:
+  - Volume mount failed
+  - Used '%cd%' for current directory
+  - '%cd%' doesn't expand correctly in 'cmd /k' context
+
+FIX:
+  - Changed to absolute path:
+    -v C:\DEV\docs\architecture\c4:/usr/local/structurizr
+  - Added STRUCTURIZR_RUNNING flag to track if it started
+  - Only open browser if flag is set
+
+================================================================================
+ERROR 10: Terminals Not Closing on Restart
+================================================================================
+USER REPORT: "Doesnt look like it autocloses all the terminals on restart 
+correctly."
+
+SYMPTOM:
+  - Old terminal windows remain open
+  - Multiple "MkDocs" or "Backstage" windows accumulating
+
+CAUSE:
+  - Generic 'taskkill' commands too broad
+  - Not targeting specific windows
+
+FIX:
+  - Use 'tasklist /V /FI "WindowTitle eq MkDocs*"' to find PIDs
+  - Kill specific cmd.exe processes by window title
+  - More aggressive cleanup
+
+================================================================================
+ERROR 11: Monitor Window Visible
+================================================================================
+USER REPORT: "can you push the debug terminal to behind browser window? 
+or even just keep it minimized?"
+
+SYMPTOM:
+  - Monitor terminal opened normally
+  - Covered browser windows
+
+CAUSE:
+  - Didn't use 'start /min' for monitor window
+
+FIX:
+  - Added 'start /min' to monitor-all.bat invocation
+  - Window now minimized in taskbar
+
+================================================================================
+ERROR 12: Browser Opening Twice
+================================================================================
+USER REPORT: "3000 opened twice"
+LATER: "3000 opened twice again"
+
+SYMPTOM:
+  - Port 3000 (Backstage) opened twice
+  - Once immediately, once after delay
+
+CAUSE:
+  - Backstage's 'yarn start' has built-in browser opening
+  - Can't disable it via command-line flag
+
+FIX:
+  - Created start-backstage.bat wrapper
+  - Set environment variables:
+    set BROWSER=none
+    set BROWSER_ARGS=--no-sandbox
+  - Prevents Backstage from opening browser
+  - Script still opens it after delay
+
+================================================================================
+ERROR 13: URL Misinterpreted
+================================================================================
+SYMPTOM:
+  - Some URLs not opening correctly
+  - Windows treating them as file paths
+
+CAUSE:
+  - 'start http://...' without empty title
+  - Windows parser can misinterpret first argument
+
+FIX:
+  - Added empty title to all start commands:
+    start "" http://localhost:3000
+  - Ensures URL is treated as URL, not window title
+
+================================================================================
+ERROR 14: Cleanup Hanging
+================================================================================
+USER REPORT: "now its just sitting here"
+
+SYMPTOM:
+  - start-all.bat froze during cleanup phase
+  - No progress, no error message
+
+CAUSE:
+  - Complex 'for /f' loops hung when no processes found
+  - Batch 'for /f' doesn't handle empty input well
+
+FIX:
+  - Simplified cleanup logic
+  - Redirect errors to nul (2^>nul)
+  - Added 2-second timeout after cleanup
+  - Still not 100% reliable (batch file limitation)
+
+================================================================================
+ERROR 15: Sourcegraph Account Lost
+================================================================================
+USER REPORT: "Also for 3000, am I a guest every time? that doesnt seem to 
+preserve either"
+
+SYMPTOM:
+  - Sourcegraph admin account lost on restart
+  - Backstage shows "Guest" on every launch
+
+CAUSE (Sourcegraph):
+  - 'docker compose down' was removing volumes
+  - Volumes contain account database
+
+FIX (Sourcegraph):
+  - Changed to 'docker compose stop'
+  - Preserves volumes and data
+
+CAUSE (Backstage):
+  - Backstage uses in-memory auth in dev mode
+  - No database backend configured
+  - Guest mode is expected behavior
+
+FIX (Backstage):
+  - NO FIX YET
+  - Need to add PostgreSQL backend
+  - Configure Backstage to use database
+  - Enable OAuth or other persistent auth
+
+================================================================================
+SUMMARY OF ROOT CAUSES
+================================================================================
+
+1. Windows Batch Limitations:
+   - Poor error handling
+   - No async execution
+   - Variable expansion quirks (%cd%)
+   - 'for /f' fragile with empty input
+
+2. Service Timing Unpredictability:
+   - Each service has different startup time
+   - No standardized health checks
+   - Can't rely on fixed delays
+
+3. Backstage Complexity:
+   - Yarn version conflicts
+   - Browser auto-open can't be disabled easily
+   - Dev mode has no persistent auth
+
+4. Docker Desktop Windows:
+   - Slow cold start (20-30 seconds)
+   - No simple "is ready" check
+   - 'docker info' is best we have
+
+================================================================================
+END OF ERROR LOG
+================================================================================
+
