@@ -69,7 +69,7 @@ if (Test-Path $targetFile) {
 ## What We DON'T Want
 
 - Full script rewrites
-- Complex enterprise architectures  
+- Complex enterprise architectures
 - JSONL logging systems
 - Health monitoring files
 - Scheduled tasks
@@ -81,4 +81,3 @@ if (Test-Path $targetFile) {
 Give us small, targeted improvements to our working code. Code snippets, not rewrites. Simple explanations, not architecture diagrams.
 
 We're building a personal automation tool, not deploying to production Kubernetes clusters.
-
