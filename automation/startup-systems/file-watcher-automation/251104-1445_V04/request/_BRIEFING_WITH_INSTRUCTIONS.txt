@@ -1,3 +1,7 @@
+﻿Follow instructions at: https://raw.githubusercontent.com/BToth1028/gpt-context-library/main/docs/gpt/_admin/GPT_INSTRUCTIONS.md
+
+---
+
 **Target path:** C:\DEV\docs\gpt\automation\startup-systems\file-watcher-automation\251104-1445_V04\response
 
 # GPT Briefing - File Watcher V04
@@ -53,3 +57,4 @@ if (Test-Path $targetFile) {
 - Complex git sync changes
 
 Give us a focused, simple solution. Code snippets, not rewrites.
+

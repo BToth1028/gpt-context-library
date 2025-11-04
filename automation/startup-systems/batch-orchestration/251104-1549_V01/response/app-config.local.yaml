@@ -1,0 +1,10 @@
+# Place in your Backstage repo root as app-config.local.yaml
+backend:
+  database:
+    client: pg
+    connection:
+      host: 127.0.0.1
+      port: 5432
+      user: backstage
+      password: backstage
+      database: backstage

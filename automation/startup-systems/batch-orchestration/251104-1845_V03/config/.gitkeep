@@ -1,0 +1,10 @@
+# Configuration Files
+
+Place configuration files here.
+
+Examples:
+- .env files
+- .yaml/.json config files
+- .ini files
+- docker-compose.yaml
+- app-config.yaml

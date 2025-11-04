@@ -51,10 +51,10 @@ Files: improved-watcher.ps1, config.json, test-suite.ps1
 ## Critical Format Rules
 
 - **Line 1:** `Target path: [path]` (no markdown bold, no explanatory text)
-- **Line 2 (if multiple files):** `Files: file1.ps1, file2.json`
+- **Line 2 (if multiple files):** `Files: file1.ps1, file2.json` (filenames only, NO paths)
 - **Main file name:** Exactly `GPT_RESPONSE.md`
-- **Additional files:** Exact names as listed, no variations
-- **Save location:** All files to Downloads folder
+- **Additional files:** Exact names as listed, no variations, no path prefixes
+- **Save location:** All files to Downloads folder with simple filenames
 - **Automated:** Watcher script will move files to target path
 
 ---

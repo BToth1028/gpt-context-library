@@ -1,0 +1,131 @@
+**Target path:** C:\DEV\docs\gpt\automation\startup-systems\batch-orchestration\251104-1845_V03\response
+
+===================================================
+GPT CONSULTATION REQUEST
+===================================================
+
+**Date:** 2025-11-04 18:45
+**Version:** V03
+**Status:** BROKEN - Script closing early
+**Category:** automation/startup-systems/batch-orchestration
+
+===================================================
+PROBLEM SUMMARY
+===================================================
+
+We successfully integrated your V02 cleanup logic into start-all.bat and got everything working:
+- ✅ Process cleanup (port-based, process trees, window matching)
+- ✅ Monitor starts immediately after services
+- ✅ Health checks optimized (20s max)
+- ✅ Browsers open successfully via PowerShell Start-Process
+
+But then we BROKE IT trying to fix Sourcegraph login persistence. Now the script exits early before reaching browser opening.
+
+===================================================
+WHAT WE CHANGED THAT BROKE IT
+===================================================
+
+**Original Sourcegraph startup (working):**
+```batch
+:: Start Sourcegraph (minimized, detached)
+echo [2/4] Starting Sourcegraph...
+if exist "C:\DEV\sourcegraph\docker-compose.yaml" (
+    start /min "Sourcegraph" cmd /k "cd C:\DEV\sourcegraph && docker compose up -d"
+    timeout /t 2 /nobreak >nul
+    echo   Started on http://localhost:7080
+) else (
+    echo   WARNING: docker-compose.yaml not found
+)
+```
+
+**Current code (broken):**
+```batch
+:: Start Sourcegraph (minimized, detached)
+echo [2/4] Starting Sourcegraph...
+if exist "C:\DEV\sourcegraph\docker-compose.yaml" (
+    cd /d C:\DEV\sourcegraph
+    docker compose up -d
+    if errorlevel 1 (
+        echo WARNING: docker compose failed, but continuing...
+    )
+    cd /d C:\DEV
+    timeout /t 2 /nobreak >nul
+    echo   Started on http://localhost:7080
+) else (
+    echo   WARNING: docker-compose.yaml not found
+)
+```
+
+**Why we changed it:** User reported Sourcegraph requires re-login every startup. Thought maybe we needed to use `docker compose start` instead of `up -d`, but that led to command escaping issues.
+
+**Result:** Script now closes early. Even with `@echo on` and `pause >nul` at the end, it still exits prematurely.
+
+===================================================
+CURRENT STATE
+===================================================
+
+**Working:**
+- ✅ Cleanup (kills all old processes)
+- ✅ Prerequisites check
+- ✅ MkDocs starts
+- ✅ Structurizr starts  
+- ✅ Backstage starts
+- ✅ Monitor starts
+- ✅ Browser opening (when script reaches it)
+
+**Broken:**
+- ❌ Script exits early somewhere during or after Sourcegraph startup
+- ❌ Never reaches health checks or browser opening
+- ❌ No clear error message
+
+**Debug state:**
+- Line 1: `@echo on` (shows all commands)
+- End: `pause >nul` (should keep window open)
+- Still closes early despite both
+
+===================================================
+QUESTIONS FOR YOU
+===================================================
+
+1. **What's causing the early exit?**
+   - Is the inline `cd /d` approach breaking something?
+   - Does docker compose return non-zero even on success?
+   - Should we just revert to the original working code?
+
+2. **Is Sourcegraph login persistence even a real problem?**
+   - docker-compose.yaml has volumes configured properly
+   - `docker compose stop` preserves containers (not using `down -v`)
+   - Volumes verified to exist and persist
+   - Might just be browser cookies clearing, not container issue
+
+3. **Best fix approach?**
+   - Revert Sourcegraph changes and test if login actually persists?
+   - Fix the inline cd approach properly?
+   - Use a different method entirely?
+
+===================================================
+ENVIRONMENT
+===================================================
+
+- Windows 11
+- PowerShell 7+
+- Docker Desktop running
+- All services: MkDocs (port 8000), Sourcegraph (7080), Structurizr (8081), Backstage (3000/7007)
+
+===================================================
+FILES INCLUDED
+===================================================
+
+- start-all.bat (284 lines) - Main startup script with integrated cleanup
+- monitor-all.bat - Monitor script that starts successfully
+- docker-compose.yaml - Sourcegraph config with volume definitions
+
+===================================================
+DESIRED OUTCOME
+===================================================
+
+1. Fix whatever is causing the script to exit early
+2. Determine if Sourcegraph login persistence is actually a problem
+3. Get back to fully working state where all services start and browsers open
+
+===================================================

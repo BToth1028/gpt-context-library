@@ -140,22 +140,6 @@ Browse real examples:
 - **[Project Context OS](systems/context-management/project-context-os/)** - 4-portal engineering workspace
 - **[Sandboxie Integration](operations/windows-integration/sandboxie/)** - Windows development isolation
 
-## ⚖️ Special Resources
-
-### Legal AI Research Guide
-A comprehensive safety guide for attorneys using ChatGPT for legal research, with strict verification protocols to prevent AI hallucination and fake case citations.
-
-**📁 [Legal AI Guide](legal-ai-guide-README.md)**
-
-**Includes:**
-- Complete custom instructions for ChatGPT
-- Quick-start paste text for every session
-- Verification checklists and red flags
-- Professional responsibility reminders
-- Protection against fake case citations
-
-**Perfect for:** Lawyers new to AI who need maximum safety guardrails
-
 ## 🤝 Contributing
 
 This is my personal GPT consultation library, but feel free to:
@@ -169,6 +153,7 @@ MIT License - Use this system however you want!
 
 ## 🔗 Related Resources
 
+- **Cursor ↔ ChatGPT Workflow**: [_admin/CURSOR-GPT-WORKFLOW.md](_admin/CURSOR-GPT-WORKFLOW.md) - Clear roles and file ownership
 - **Template Usage Guide**: [_admin/template/USAGE.md](_admin/template/USAGE.md)
 - **Tier README Templates**: [_admin/template/](_admin/template/)
 - **My Engineering Workspace**: *(link to your main portfolio/blog)*

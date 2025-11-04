@@ -1,0 +1,186 @@
+﻿# Custom Instructions for GPT Briefing Sessions
+
+**Paste this at the start of each new ChatGPT session. Then just upload files/folders - no additional prompts needed.**
+
+---
+
+## When I Upload a Briefing
+
+You will receive either:
+- A zip file with code/docs
+- Multiple files from an `all_files` folder
+- Individual files
+
+**Your tasks:**
+
+1. **Review all documentation** (note the Target path in the briefing)
+2. **Summarize what works** and what does not work
+3. **Provide complete code fixes** for all apparent issues
+4. **Suggest improvements** and additional features
+5. **Include implementation code** for all suggestions
+
+Be thorough and provide production-ready code with explanations.
+
+---
+
+## Response File Format
+
+### Single File Response
+
+Save as: `GPT_RESPONSE.md`
+
+```markdown
+Target path: [exact path from briefing]
+
+## Your response starts here...
+```
+
+### Multiple File Response
+
+Save as: `GPT_RESPONSE.md` + additional files
+
+```markdown
+Target path: [exact path from briefing]
+Files: improved-watcher.ps1, config.json, test-suite.ps1
+
+## Your response starts here...
+```
+
+---
+
+## Critical Format Rules
+
+- **Line 1:** `Target path: [path]` (no markdown bold, no explanatory text)
+- **Line 2 (if multiple files):** `Files: file1.ps1, file2.json`
+- **Main file name:** Exactly `GPT_RESPONSE.md`
+- **Additional files:** Exact names as listed, no variations
+- **Save location:** All files to Downloads folder
+- **Automated:** Watcher script will move files to target path
+
+---
+
+## What I Expect
+
+- Deep analysis of code and context
+- Honest assessment (what works, what doesn't, what's over-engineered)
+- Simple solutions when possible (avoid enterprise complexity unless needed)
+- Complete, working code (not just snippets or diffs)
+- Clear explanations of changes and reasoning
+- Multiple alternatives when appropriate
+
+---
+
+## Example Response
+
+```markdown
+Target path: C:\DEV\docs\gpt\automation\startup-systems\watcher\251104-1500_V01\response
+Files: watcher-improved.ps1, watcher-test.ps1
+
+## Summary
+Your current polling watcher works reliably...
+
+## Issues Found
+1. No file stability check...
+2. Missing error handling...
+
+## Proposed Solution
+[Complete working code here]
+
+## Implementation
+...
+```
+
+---
+
+**That's it! Just paste this once per session, then upload files and I'll handle the rest.**
+
+
+================================================
+BRIEFING
+================================================
+
+**Target path:** C:\DEV\docs\gpt\automation\startup-systems\batch-orchestration\251104-1721_V02\response
+
+# GPT Briefing - Process Cleanup Issue
+
+**Date:** 2025-11-04 17:21
+**Topic:** Reliable process cleanup for Project Context OS startup script
+
+## Problem
+
+Our PowerShell startup script (`start-all.ps1`) is supposed to kill all existing service windows before starting fresh, but it's **not working reliably**. Services keep accumulating duplicates:
+
+- 6 MkDocs windows
+- 3 Sourcegraph windows
+- 3 Structurizr windows
+- 4 Backstage windows
+- 2 Monitor windows
+
+## Current Cleanup Approach (Not Working)
+
+```powershell
+# Kill all service windows by title
+$titles = @("MkDocs", "Sourcegraph", "Structurizr", "Backstage", "Monitor")
+foreach ($title in $titles) {
+    $procs = Get-Process cmd -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*$title*" }
+    foreach ($proc in $procs) {
+        Stop-Process -Id $proc.Id -Force
+    }
+}
+```
+
+**Why it's failing:**
+- Windows created with `Start-Process cmd -ArgumentList "/k", "title ServiceName && command"`
+- Sometimes titles don't match immediately
+- Processes don't die fast enough before restart
+- Child processes (Python, Docker) might survive parent kill
+
+## Services We're Managing
+
+1. **MkDocs** - Python venv process: `C:\DEV\.venv\Scripts\python.exe -m mkdocs serve`
+2. **Sourcegraph** - Docker Compose: `cd C:\DEV\sourcegraph && docker compose up`
+3. **Structurizr** - Docker run: `docker run -p 8081:8080 -v C:\DEV\docs\architecture\c4:/usr/local/structurizr structurizr/lite`
+4. **Backstage** - Node/Yarn: `cd C:\DEV\backstage && start-backstage.bat`
+5. **Monitor** - Batch script: `C:\DEV\monitor-all.bat`
+
+## What We Need
+
+**A bulletproof cleanup function that:**
+
+1. **Finds ALL instances** of these services (not just by window title)
+2. **Kills them reliably** (including child processes)
+3. **Verifies they're dead** before returning
+4. **Doesn't touch unrelated processes** (like other Docker containers)
+5. **Works on Windows 11** with PowerShell 7+
+
+## Constraints
+
+- Must be **PowerShell** (not batch)
+- Can use **port-based killing** (8000, 3000, 7007, 7080, 8081)
+- Can use **process tree killing** if needed
+- Should **preserve Docker volumes** (don't `docker compose down`, use `stop`)
+- Must be **fast** (< 10 seconds total cleanup time)
+
+## Questions for ChatGPT
+
+1. **What's the most reliable way to kill cmd.exe processes launched with `/k` and a title?**
+2. **Should we track PIDs in a file, or is there a better approach?**
+3. **How do we ensure child processes (Python, Docker) are killed?**
+4. **Should we use `Stop-Process -Force` or something else?**
+5. **How do we verify processes are actually dead before proceeding?**
+
+## Expected Deliverable
+
+**Complete, working PowerShell function:**
+```powershell
+function Stop-AllProjectContextServices {
+    # Your bulletproof implementation here
+}
+```
+
+That we can drop into our script and it **just works**.
+
+## Current Script Included
+
+See `start-all.ps1` for full context.
+

@@ -1,0 +1,45 @@
+services:
+  sourcegraph:
+    image: sourcegraph/server:5.5.0
+    container_name: sourcegraph
+    environment:
+      # Logging and deployment type
+      - SRC_LOG_LEVEL=info
+      - DEPLOY_TYPE=docker-compose
+
+      # Disable features not needed for minimal setup
+      - DISABLE_CODE_INSIGHTS=true
+
+      # External URL configuration
+      - SRC_FRONTEND_EXTERNAL_URL=http://localhost:7080
+
+      # Resource limits (optional, adjust as needed)
+      - GOMAXPROCS=4
+      - SRC_HTTP_WORKERS=4
+    ports:
+      - "7080:7080"
+      # Port 3178 (gitserver) exposed only for debugging, remove in production
+      # - "3178:3178"
+    volumes:
+      - sourcegraph-data:/var/opt/sourcegraph
+      - sourcegraph-config:/etc/sourcegraph
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:7080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 300s
+    # Resource limits (optional)
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 2G
+
+volumes:
+  sourcegraph-data:
+    driver: local
+  sourcegraph-config:
+    driver: local
