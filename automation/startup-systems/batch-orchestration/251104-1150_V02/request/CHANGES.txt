@@ -75,7 +75,7 @@ echo   WARNING: Sourcegraph healthz not ready after 120s
 :sg_ok
 ```
 
-**Why**: 
+**Why**:
 - Polls Sourcegraph's `/healthz` endpoint every 2 seconds
 - Up to 60 attempts (120 seconds total)
 - Only proceeds when service reports healthy
@@ -241,4 +241,3 @@ V02 State:
 ================================================================================
   END OF V02 CHANGES
 ================================================================================
-
