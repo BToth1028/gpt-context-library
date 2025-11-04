@@ -27,7 +27,7 @@ FIX:
 ================================================================================
 ERROR 2: Docker Not Starting Automatically
 ================================================================================
-USER REPORT: "its telling me to start docker. why cant you start docker as 
+USER REPORT: "its telling me to start docker. why cant you start docker as
 part of this process"
 
 SYMPTOM:
@@ -136,7 +136,7 @@ FIX:
 ================================================================================
 ERROR 8: Wrong Port Opened
 ================================================================================
-USER REPORT: "port 3000 should be showing data? looks empty. port 7007 is 
+USER REPORT: "port 3000 should be showing data? looks empty. port 7007 is
 showing it cant be found."
 
 SYMPTOM:
@@ -180,7 +180,7 @@ FIX:
 ================================================================================
 ERROR 10: Terminals Not Closing on Restart
 ================================================================================
-USER REPORT: "Doesnt look like it autocloses all the terminals on restart 
+USER REPORT: "Doesnt look like it autocloses all the terminals on restart
 correctly."
 
 SYMPTOM:
@@ -199,7 +199,7 @@ FIX:
 ================================================================================
 ERROR 11: Monitor Window Visible
 ================================================================================
-USER REPORT: "can you push the debug terminal to behind browser window? 
+USER REPORT: "can you push the debug terminal to behind browser window?
 or even just keep it minimized?"
 
 SYMPTOM:
@@ -273,7 +273,7 @@ FIX:
 ================================================================================
 ERROR 15: Sourcegraph Account Lost
 ================================================================================
-USER REPORT: "Also for 3000, am I a guest every time? that doesnt seem to 
+USER REPORT: "Also for 3000, am I a guest every time? that doesnt seem to
 preserve either"
 
 SYMPTOM:
@@ -327,4 +327,3 @@ SUMMARY OF ROOT CAUSES
 ================================================================================
 END OF ERROR LOG
 ================================================================================
-
