@@ -1,0 +1,84 @@
+**Target path:** C:\DEV\docs\gpt\automation\startup-systems\file-watcher-automation\251104-1430_V03\response
+
+# GPT Briefing - File Watcher V03
+
+**Date:** 2025-11-04 14:30
+**Topic:** STOP OVER-ENGINEERING - Just Add Stability Check
+**Previous Version:** V02 (you provided complex solution, we rejected it)
+
+## Critical Feedback on V02 Response
+
+Your V02 response completely ignored our request for simplicity. We explicitly said:
+- "Keep it simple - no over-engineering"
+- "No complex queues, timers, health checks, or scheduled tasks"
+
+You gave us:
+- Complex debounce timer systems
+- Concurrent queues
+- JSONL structured logging
+- Health heartbeat files
+- Scheduled task monitoring
+
+**This is NOT what we want.**
+
+## What Actually Happened
+
+Our **simple polling watcher worked perfectly**. It successfully detected and moved your V02 response file. The proof: your response is in the correct folder.
+
+We don't need enterprise monitoring systems. We need a simple, reliable script.
+
+## What We Have (That Works)
+
+See attached `gpt-response-watcher.ps1`:
+- Polls Downloads folder every 2 seconds
+- Checks if `GPT_RESPONSE.md` exists
+- Reads target path from file content
+- Moves file and exits (one-shot mode)
+- ~150 lines, easy to understand
+
+**This code is good. We want to KEEP it.**
+
+## What We Want From You
+
+**DO NOT rewrite our script.**
+
+Instead, provide:
+1. A code snippet for a `Test-FileStable` function that verifies file size isn't changing
+2. A code snippet showing where to add it in our existing polling loop
+3. Brief explanation of why checking file stability matters
+4. Any other small improvements as **optional snippets** (not full rewrites)
+
+## Example of What We Want
+
+```powershell
+# Add this function at the top
+function Test-FileStable([string]$path, [int]$checkMs = 500) {
+    # your code here
+}
+
+# Insert this check in the existing polling loop around line 110:
+if (Test-Path $targetFile) {
+    # ADD THIS:
+    if (-not (Test-FileStable $targetFile)) {
+        continue  # File still writing, check again next loop
+    }
+    # THEN continue with existing move logic
+}
+```
+
+## What We DON'T Want
+
+- Full script rewrites
+- Complex enterprise architectures  
+- JSONL logging systems
+- Health monitoring files
+- Scheduled tasks
+- Pester test suites
+- Git sync rewrites
+
+## Summary
+
+Give us small, targeted improvements to our working code. Code snippets, not rewrites. Simple explanations, not architecture diagrams.
+
+We're building a personal automation tool, not deploying to production Kubernetes clusters.
+
