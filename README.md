@@ -140,6 +140,22 @@ Browse real examples:
 - **[Project Context OS](systems/context-management/project-context-os/)** - 4-portal engineering workspace
 - **[Sandboxie Integration](operations/windows-integration/sandboxie/)** - Windows development isolation
 
+## ⚖️ Special Resources
+
+### Legal AI Research Guide
+A comprehensive safety guide for attorneys using ChatGPT for legal research, with strict verification protocols to prevent AI hallucination and fake case citations.
+
+**📁 [Legal AI Guide](legal-ai-guide-README.md)**
+
+**Includes:**
+- Complete custom instructions for ChatGPT
+- Quick-start paste text for every session
+- Verification checklists and red flags
+- Professional responsibility reminders
+- Protection against fake case citations
+
+**Perfect for:** Lawyers new to AI who need maximum safety guardrails
+
 ## 🤝 Contributing
 
 This is my personal GPT consultation library, but feel free to:
