@@ -39,10 +39,9 @@ Confirm you understand these rules before we begin.
 
 ---
 
-INSTRUCTIONS: 
+INSTRUCTIONS:
 1. Copy everything between the --- lines above
 2. Paste into ChatGPT at the start of a new conversation
 3. Wait for ChatGPT to confirm it understands
 4. Then ask your legal research question
 5. ALWAYS verify anything important through Westlaw or LexisNexis before using it professionally
-

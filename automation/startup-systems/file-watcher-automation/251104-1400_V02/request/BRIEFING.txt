@@ -1,0 +1,67 @@
+**Target path:** C:\DEV\docs\gpt\automation\startup-systems\file-watcher-automation\251104-1400_V02\response
+
+# GPT Briefing - File Watcher Automation V02
+
+**Date:** 2025-11-04 14:00
+**Topic:** GPT Response Watcher - Simplify and Make Reliable
+**Previous Version:** V01 (your response reviewed)
+
+## Context
+
+We have a workflow where:
+1. User creates a GPT briefing zip file
+2. User uploads zip to ChatGPT with a prompt
+3. ChatGPT responds with fixes/suggestions
+4. User saves response as `GPT_RESPONSE.md` in Downloads folder
+5. A watcher script automatically moves it to the correct version's response folder
+
+## What Currently Works
+
+1. **Simple polling approach** - Script checks Downloads folder every 2 seconds for `GPT_RESPONSE.md`
+2. **Target path extraction** - Reads `**Target path:**` from the first line of the response document
+3. **One-shot mode** - Watcher exits after successfully moving the file
+4. **PID tracking** - Watcher PID is saved to `.watcher.pid` file for clean shutdown
+5. **Integrated workflow** - `prepare-gpt-zip.ps1` creates zip, starts watcher, copies prompt to clipboard
+
+## The Problem
+
+The watcher is **not reliably detecting** when the file appears in Downloads. We suspect:
+- File may still be writing when we try to move it
+- Chrome may be using a temp file that gets renamed
+- Need to verify file is stable before moving
+
+## What We Tried (V01 Response)
+
+Your V01 response suggested:
+- Complex debounce timer system with concurrent queues
+- JSONL structured logging
+- Health heartbeat files
+- Scheduled task monitoring
+- Full Pester test suite
+
+**Feedback:** This is over-engineered for our simple use case.
+
+## What We Want
+
+A **simple but very reliable** solution:
+1. Keep the polling approach (check every 2 seconds)
+2. Add a stability check - verify file size isn't changing before moving
+3. Keep structured logging simple (timestamp + message to console)
+4. Keep one-shot mode - run, move file, exit
+5. No complex queues, timers, health checks, or scheduled tasks
+
+**Core requirement:** When user saves `GPT_RESPONSE.md` in Downloads, it should be moved within 5 seconds, reliably, every time.
+
+## Current Code Issues
+
+See attached `gpt-response-watcher.ps1` - it polls but doesn't verify file stability before moving.
+
+## What We Need From You
+
+1. Review the current simple polling approach
+2. Add a reliable "wait for file to be stable" check (verify file size stops changing)
+3. Keep it simple - no over-engineering
+4. Provide the complete updated `gpt-response-watcher.ps1` script
+5. Explain the stability check approach in plain language
+
+We want production-ready but **simple** code - not a complex enterprise system.

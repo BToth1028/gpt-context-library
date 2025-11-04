@@ -17,27 +17,27 @@ This framework provides strict verification protocols for lawyers using AI, espe
 ## 📁 Files in This Framework
 
 ### **START-HERE.md**
-**For:** Complete beginners who've never used ChatGPT  
-**Length:** ~5 pages, step-by-step  
+**For:** Complete beginners who've never used ChatGPT
+**Length:** ~5 pages, step-by-step
 **Purpose:** Setup guide with screenshots-style instructions
 
 ### **PASTE-INTO-CHATGPT.txt**
-**For:** Every single ChatGPT session  
-**Length:** ~30 lines  
+**For:** Every single ChatGPT session
+**Length:** ~30 lines
 **Purpose:** Safety rules to paste at the start of every conversation
 
 ### **QUICK-REFERENCE.md**
-**For:** Keep on your desk while working  
-**Length:** 2-3 pages  
+**For:** Keep on your desk while working
+**Length:** 2-3 pages
 **Purpose:** Red flags, checklists, warnings
 
 ### **COMPLETE-GUIDE.md**
-**For:** Deep understanding of all rules and risks  
-**Length:** ~15 pages  
+**For:** Deep understanding of all rules and risks
+**Length:** ~15 pages
 **Purpose:** Comprehensive instructions, workflows, examples
 
 ### **README.md** (This file)
-**For:** Understanding the framework structure  
+**For:** Understanding the framework structure
 **Purpose:** Navigation and overview
 
 ---
@@ -80,20 +80,20 @@ This framework provides strict verification protocols for lawyers using AI, espe
 ## 🛡️ How This Protects You
 
 ### Forces ChatGPT To:
-✅ Verify every case via web search before citing  
-✅ Show verification steps explicitly  
-✅ Ask for jurisdiction before providing law  
-✅ Give confidence levels (HIGH/MEDIUM/LOW/NONE)  
-✅ Include verification disclaimers  
-✅ Say "I cannot verify" instead of guessing  
+✅ Verify every case via web search before citing
+✅ Show verification steps explicitly
+✅ Ask for jurisdiction before providing law
+✅ Give confidence levels (HIGH/MEDIUM/LOW/NONE)
+✅ Include verification disclaimers
+✅ Say "I cannot verify" instead of guessing
 
 ### Protects Against:
-❌ Hallucinated fake cases  
-❌ Wrong jurisdiction applied  
-❌ Overconfident unverified answers  
-❌ Specific legal advice (keeps it research-only)  
-❌ Outdated information  
-❌ Professional sanctions  
+❌ Hallucinated fake cases
+❌ Wrong jurisdiction applied
+❌ Overconfident unverified answers
+❌ Specific legal advice (keeps it research-only)
+❌ Outdated information
+❌ Professional sanctions
 
 ---
 
@@ -148,8 +148,8 @@ Stop immediately if ChatGPT:
 
 ## 🔄 Updates
 
-**Version:** 1.0  
-**Created:** November 2025  
+**Version:** 1.0
+**Created:** November 2025
 **Review:** Annually or when AI technology/guidance changes
 
 ### When to Update:
@@ -225,4 +225,3 @@ You're using this correctly if:
 ---
 
 *Created November 2025 for attorneys using ChatGPT with maximum safety precautions.*
-
