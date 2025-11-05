@@ -174,7 +174,7 @@ def board_refresher(interval=2):
     if not BOARD_CACHE.get("initialized"):
         BOARD_CACHE["json"] = {"title": "Vector Management", "sections": [], "refresh_ms": 2000}
         BOARD_CACHE["initialized"] = True
-    
+
     # Then do full refresh
     while True:
         t0 = time.time()
