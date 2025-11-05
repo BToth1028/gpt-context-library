@@ -7,10 +7,10 @@ When creating a new GPT summary request:
 1. **Check existing tiers** - Does the topic fit in an existing category?
 2. **Create/reuse tier structure** as needed
 3. **Copy VERSION_TEMPLATE/** folder
-4. **Rename** to `YYMMDD-HHMM_VXX` (increment version if same topic)
+4. **Rename** to `YYMMDD-HHMM` (timestamp = version, newer = later)
 5. **Populate** the subfolders with content
-6. **Copy everything to zip/** folder (flattened)
-7. **Update** the Tier 3 README with new version entry
+6. **Create BRIEFING.zip** (flatten all files from all subfolders)
+7. **Open appropriate folder** for user to drag files to ChatGPT
 
 ## Template Structure
 
@@ -39,12 +39,14 @@ _TEMPLATE/
 
 ## Version Naming
 
-**Format**: `YYMMDD-HHMM_VXX`
+**Format**: `YYMMDD-HHMM` (timestamp only, no version suffix)
 
 **Examples**:
-- `251104-1530_V01` - First request on Nov 4, 2025 at 3:30 PM
-- `251104-1645_V02` - Second request same day at 4:45 PM
-- `251105-0900_V03` - Third request next day at 9:00 AM
+- `251104-1530` - Request on Nov 4, 2025 at 3:30 PM
+- `251104-1645` - Another request same day at 4:45 PM (later time = newer)
+- `251105-0900` - Request next day at 9:00 AM
+
+**Note**: Timestamp serves as natural version - newer timestamps = newer versions
 
 ## Workflow Example
 
@@ -62,28 +64,33 @@ _TEMPLATE/
    # Edit README.md with topic details
    ```
 
-3. **Create Version 1**:
+3. **Create Version**:
    ```powershell
-   cp -Recurse _TEMPLATE/VERSION_TEMPLATE "gpt/automation/startup-systems/startup-cleanup-hanging/251104-1530_V01"
+   cp -Recurse _TEMPLATE/VERSION_TEMPLATE "gpt/automation/startup-systems/startup-cleanup-hanging/251104-1530"
    ```
 
 4. **Populate folders**:
-   - Edit `request/BRIEFING.txt` with full details
+   - Edit `request/BRIEFING.txt` with full details (update Target path!)
+   - **CRITICAL:** Ensure GPT Instructions link is line 2 (template includes it)
    - Copy `start-all.bat` to `code/`
    - Copy error logs to `logs/`
    - Copy screenshots to `docs/`
 
-5. **Flatten to zip/**:
+5. **Create BRIEFING.zip**:
    ```powershell
+   # Flatten all files into zip, then compress
    cp request/BRIEFING.txt zip/
    cp code/* zip/
    cp logs/* zip/
    # etc. for all populated folders
+   Compress-Archive -Path 'VERSION/zip/*' -DestinationPath 'VERSION/BRIEFING.zip' -Force
+   # Delete intermediate zip/ folder
+   rm -r zip/
    ```
 
 6. **Send to GPT**:
-   - Copy everything from `zip/` folder
-   - Paste to ChatGPT
+   - If < 10 files: Open BRIEFING.zip, drag individual files
+   - If ≥ 10 files: Open parent folder, drag BRIEFING.zip
 
 ## README Template Guidelines
 
@@ -117,17 +124,20 @@ _TEMPLATE/
 - Specific topic doesn't exist
 - Different enough from existing Tier 3s
 
-**Add new Version** when:
+**Add new timestamped folder** when:
 - Same topic, new attempt/iteration
 - Follow-up on previous GPT consultation
+- Simply create new folder with current timestamp (no version suffix needed)
 
 ## Tips
 
 - **Delete empty folders** - If you don't need `tests/` or `diagrams/`, remove them
 - **Keep organized** - Use the structured folders for human navigation
-- **Keep zip/ flat** - Everything goes directly in zip/, no subfolders
-- **Update READMEs** - Keep tier READMEs current with new topics/versions
-- **Version incrementally** - V01, V02, V03... don't skip numbers
+- **Target path critical** - MUST be line 1 in BRIEFING.txt, exact path match required
+- **Instructions link** - MUST be line 2 in BRIEFING.txt (template has it, don't remove!)
+- **BRIEFING.zip only** - Create one zip with all files flattened, no intermediate folders
+- **Timestamps are versions** - Newer timestamp = newer version, no V01/V02 needed
+- **GPT response format** - Instructions link ensures ChatGPT formats correctly for watcher
 
 ## Maintenance
 

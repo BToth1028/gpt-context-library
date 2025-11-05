@@ -21,7 +21,7 @@ MCP server processes are running but Cursor cannot connect to qdrant-store/qdran
 ## What Works ✅
 
 1. **Qdrant is running**: localhost:6333, collection `cursor-chats` exists
-2. **MCP server processes are running**: 
+2. **MCP server processes are running**:
    - Process IDs: 30456, 41648
    - Path: C:\Users\rtoth\AppData\Local\uv\cache\archive-v0\90M1e2HCwMvkTK9NlaEiM\Scripts\mcp-server-qdrant.exe
 3. **Fixed bugs in code**:
@@ -207,4 +207,3 @@ After ChatGPT's analysis and fixes:
 ═══════════════════════════════════════════════════════════════
 End of Briefing
 ═══════════════════════════════════════════════════════════════
-

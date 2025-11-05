@@ -13,12 +13,12 @@
 
 [Background information - why this topic exists, what led to needing GPT consultation]
 
-## Version History
+## Consultation History
 
-| Version | Date | Time | Status | Summary |
-|---------|------|------|--------|---------|
-| V01 | YYYY-MM-DD | HH:MM | [Status] | [Brief description] |
-| V02 | YYYY-MM-DD | HH:MM | [Status] | [Brief description] |
+Each timestamped folder represents a separate GPT consultation:
+- `YYMMDD-HHMM/` - Timestamp serves as version
+- Newer timestamps = more recent consultations
+- Check folder contents for full context
 
 ## Key Points
 

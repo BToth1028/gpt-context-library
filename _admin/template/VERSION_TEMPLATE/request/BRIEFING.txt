@@ -1,3 +1,7 @@
+**Target path:** C:\DEV\docs\gpt\[tier1]\[tier2]\[tier3]\[YYMMDD-HHMM]\response
+
+**📋 INSTRUCTIONS:** https://gist.githubusercontent.com/BToth1028/43f7d12d460d93f32da0c71e2faef3bb/raw/cbd9b16d6c150cad5b27dfa020067ec436abd18a/GPT_INSTRUCTIONS.md
+
 ═══════════════════════════════════════════════════════════════════════════
 GPT BRIEFING REQUEST
 ═══════════════════════════════════════════════════════════════════════════
@@ -5,7 +9,6 @@ Topic:          [Specific topic name]
 Category:       [tier1] > [tier2] > [tier3]
 Date:           YYYY-MM-DD
 Time:           HH:MM
-Version:        VXX
 Status:         [Active/Blocked/In Progress/Resolved]
 Request Type:   [Bug Fix/Feature/Analysis/Optimization/Other]
 ═══════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,237 @@
+**Target path:** C:\DEV\docs\gpt\systems\window-positioning\chrome-app-mode\251105-0657\response
+
+═══════════════════════════════════════════════════════════════════════════
+GPT BRIEFING REQUEST
+═══════════════════════════════════════════════════════════════════════════
+Topic:          Chrome App Mode Window Positioning Inconsistency
+Category:       systems > window-positioning > chrome-app-mode
+Date:           2025-11-05
+Time:           06:57
+Status:         Blocked
+Request Type:   Bug Fix
+═══════════════════════════════════════════════════════════════════════════
+
+## GOAL
+───────────────────────────────────────────────────────────────────────────
+Understand why identical Chrome app mode launch commands produce different
+window positions when called from different PowerShell scripts.
+
+
+## SYSTEM ARCHITECTURE
+───────────────────────────────────────────────────────────────────────────
+
+### Monitor Setup
+- 3 monitors: Monitor 3 (2560×1440) / Monitor 1 (primary) / Monitor 2
+- Monitor 3 positioned LEFT of primary (negative X coordinates)
+- Target position: X=-400, Y=100 (right edge of Monitor 3)
+
+### Components
+- **Chrome Browser**: `C:\Program Files\Google\Chrome\Application\chrome.exe`
+- **Dashboard Server**: Flask app running on localhost:5555
+- **Test Script**: test_only_3.ps1 (WORKS)
+- **Dashboard Launcher**: start_dashboard.ps1 (FAILS)
+
+
+## WHAT WE BUILT
+───────────────────────────────────────────────────────────────────────────
+- **start_dashboard.ps1** - Launches dashboard with Chrome app mode (FAILS - opens on Monitor 1)
+- **test_only_3.ps1** - Test script with same Chrome command (WORKS - opens on Monitor 3)
+- **test_fresh_app_windows.ps1** - Original test suite that confirmed X=-400 works
+
+
+## CURRENT ISSUES
+───────────────────────────────────────────────────────────────────────────
+
+### Issue 1: Window Positioning Inconsistency
+──────────────────────────────────────────────────────────────────────────
+**PROBLEM:**
+Chrome app mode window appears on Monitor 3 when launched from test script,
+but appears on Monitor 1 when launched from dashboard script, despite using
+IDENTICAL Chrome arguments.
+
+**WORKING CODE:**
+File: test_only_3.ps1
+
+```powershell
+# Kill all existing browser instances first
+Get-Process chrome,msedge -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+Start-Sleep -Seconds 2
+
+$chrome = "C:\Program Files\Google\Chrome\Application\chrome.exe"
+$testUrl = "http://localhost:5555"
+
+Start-Process -FilePath $chrome -ArgumentList "--app=$testUrl","--user-data-dir=$env:TEMP\chrome_test3","--window-position=-400,100","--window-size=600,400"
+```
+Result: ✅ Window appears on Monitor 3 at X=-400
+
+**FAILING CODE:**
+File: start_dashboard.ps1
+
+```powershell
+# Kill ONLY dashboard Chrome instances (not all Chrome)
+Get-Process chrome -ErrorAction SilentlyContinue | ForEach-Object {
+    try {
+        $cmdline = (Get-CimInstance Win32_Process -Filter "ProcessId = $($_.Id)").CommandLine
+        if ($cmdline -like "*$userDataDir*") {
+            Stop-Process -Id $_.Id -Force -ErrorAction Stop
+        }
+    } catch {}
+}
+
+Start-Sleep -Seconds 1
+
+# [Dashboard server startup code here - waits for server to be ready]
+
+# Ensure Chrome is running (needed for window positioning to work)
+$chromeRunning = Get-Process chrome -ErrorAction SilentlyContinue
+if (-not $chromeRunning) {
+    Start-Process -FilePath $chrome -ArgumentList "about:blank"
+    Start-Sleep -Seconds 2
+}
+
+Start-Process -FilePath $chrome -ArgumentList "--app=$url","--user-data-dir=$userDataDir","--window-position=-400,100","--window-size=1200,800"
+```
+Result: ❌ Window appears on Monitor 1
+
+**WHY:**
+Unknown. The Chrome launch arguments are identical between working and failing cases:
+- Same `--app=URL` format
+- Same `--user-data-dir` pattern (just different paths)
+- Same `--window-position=-400,100`
+- Same `--window-size` pattern (different dimensions but shouldn't affect position)
+
+**ATTEMPTED FIXES:**
+1. Used Edge instead of Chrome
+   Result: Same issue - test works, dashboard fails
+
+2. Cleared Chrome preferences cache
+   Result: No effect
+
+3. Tried different X coordinates (-2400, -1280, -800, -400)
+   Result: Test script works for all, dashboard fails for all
+
+4. Tried Windows API SetWindowPos after launch
+   Result: Can't reliably get window handle for app mode windows
+
+5. Ensured Chrome already running before dashboard launch
+   Result: No effect - still opens on Monitor 1
+
+6. Made dashboard use exact same user data dir as test
+   Result: (not yet tested)
+
+7. Removed ALL differences except URL variable names
+   Result: Still fails
+
+8. Killed only dashboard Chrome vs killing all Chrome
+   Result: Both configurations fail
+
+**STATUS:** Blocked - Cannot identify what's different between scripts
+
+
+## WHAT WORKS
+───────────────────────────────────────────────────────────────────────────
+✅ **test_only_3.ps1** - Always positions window on Monitor 3
+✅ **Window positioning generally** - X=-400 is confirmed correct for Monitor 3
+✅ **Dashboard server** - Starts successfully on localhost:5555
+✅ **Chrome app mode** - Launches successfully (just wrong monitor)
+
+❌ **start_dashboard.ps1** - Always positions window on Monitor 1
+❌ **Consistency** - Can't replicate test success in dashboard launcher
+
+
+## DESIRED BEHAVIOR
+───────────────────────────────────────────────────────────────────────────
+1. **User runs:** `.\start_dashboard.ps1`
+2. **Script starts:** Flask dashboard server on localhost:5555
+3. **Script waits:** For server to respond to health check
+4. **Script launches:** Chrome in app mode with `--window-position=-400,100`
+5. **Result:** Dashboard window appears on Monitor 3 at X=-400, Y=100
+
+
+## TECHNICAL CONSTRAINTS
+───────────────────────────────────────────────────────────────────────────
+- **Operating System**: Windows 11 (Build 26200)
+- **Shell**: PowerShell 5.1
+- **Browser**: Chrome 130.x
+- **Monitor 3 Resolution**: 2560×1440
+- **Coordinate System**: Monitor 3 uses negative X values (-2560 to 0)
+- **Limitation**: `--window-position` flag behavior varies based on launch context
+
+
+## KEY OBSERVATIONS
+───────────────────────────────────────────────────────────────────────────
+1. **Killing all Chrome processes makes test work:**
+   - Test script kills ALL Chrome before launching
+   - When dashboard does this, it closes user's other Chrome windows (unacceptable)
+
+2. **Having Chrome already running:**
+   - Test was observed to work even when Chrome was running
+   - Dashboard fails whether Chrome is running or not
+
+3. **User data directory:**
+   - Test uses: `$env:TEMP\chrome_test3`
+   - Dashboard uses: `$env:TEMP\vms_dashboard`
+   - Both are temporary directories, shouldn't cache positions differently
+
+4. **Launch timing:**
+   - Test launches immediately
+   - Dashboard launches after server startup (3-5 second delay)
+   - Could timing affect Chrome's window placement logic?
+
+5. **Script execution context:**
+   - Both run from same directory: `C:\DEV\tools\vector-management\scripts`
+   - Both use same PowerShell version
+   - What other context could differ?
+
+
+## WHAT GPT SHOULD FOCUS ON
+───────────────────────────────────────────────────────────────────────────
+1. **Root cause analysis**
+   Why: Need to understand what Chrome considers when placing app mode windows
+
+2. **Chrome window placement behavior**
+   Why: Understand if Chrome caches positions, uses heuristics, or has undocumented behavior
+
+3. **Potential workarounds**
+   Why: If root cause can't be fixed, need alternative approach (Windows API, registry, Chrome flags)
+
+
+## MY RECOMMENDATIONS
+───────────────────────────────────────────────────────────────────────────
+
+### To Fix Current Issue:
+1. Research Chrome's window placement decision tree for app mode
+2. Check if Chrome stores window positions in profile/user-data-dir
+3. Investigate if Chrome has timing-dependent window placement
+4. Consider if process tree/parent process affects positioning
+
+### To Improve Overall:
+1. If Chrome flags unreliable, use Windows API immediately after launch
+2. Add Chrome debug logging flags to see window placement decisions
+3. Create minimal reproduction case (simplest possible scripts)
+
+
+## SUCCESS CRITERIA
+───────────────────────────────────────────────────────────────────────────
+- [ ] Dashboard window consistently appears on Monitor 3 at X=-400
+- [ ] Solution doesn't close user's existing Chrome windows
+- [ ] Solution is reliable across reboots and Chrome updates
+- [ ] Understand WHY the test works but dashboard fails
+
+
+## ADDITIONAL CONTEXT
+───────────────────────────────────────────────────────────────────────────
+This is blocking deployment of the Vector Management System dashboard, which
+needs to appear on Monitor 3 for the user's workflow. The test script proves
+the coordinates are correct, but we can't get the same behavior in production.
+
+
+## RELATED DOCUMENTATION
+───────────────────────────────────────────────────────────────────────────
+- **Chrome Command Line Flags**: https://peter.sh/experiments/chromium-command-line-switches/
+- **Dashboard Source**: C:\DEV\tools\vector-management\src\dashboard_comprehensive.py
+
+
+═══════════════════════════════════════════════════════════════════════════
+END OF BRIEFING
+═══════════════════════════════════════════════════════════════════════════
