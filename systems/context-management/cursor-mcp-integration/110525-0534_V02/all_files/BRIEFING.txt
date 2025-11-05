@@ -1,0 +1,210 @@
+═══════════════════════════════════════════════════════════════
+GPT BRIEFING REQUEST
+═══════════════════════════════════════════════════════════════
+AI Model: Claude Sonnet 4.5 (Cursor IDE)
+Topic: MCP Server Connection Issue After Fixes
+Date: 2025-11-05
+Time: 05:34
+Version: V02
+Status: Issue
+Category: systems/context-management/cursor-mcp-integration
+═══════════════════════════════════════════════════════════════
+
+Follow instructions at: https://raw.githubusercontent.com/BToth1028/gpt-context-library/main/_admin/GPT_INSTRUCTIONS.md
+
+**Target path:** C:\DEV\docs\gpt\systems\context-management\cursor-mcp-integration\110525-0534_V02\response
+
+## Summary
+
+MCP server processes are running but Cursor cannot connect to qdrant-store/qdrant-find tools after restart. Fixed vector name mismatch bugs in mcp_client.py and schema.py, but need to understand why MCP servers aren't reconnecting to Cursor.
+
+## What Works ✅
+
+1. **Qdrant is running**: localhost:6333, collection `cursor-chats` exists
+2. **MCP server processes are running**: 
+   - Process IDs: 30456, 41648
+   - Path: C:\Users\rtoth\AppData\Local\uv\cache\archive-v0\90M1e2HCwMvkTK9NlaEiM\Scripts\mcp-server-qdrant.exe
+3. **Fixed bugs in code**:
+   - mcp_client.py line 92: Changed from named vector `{"fast-all-minilm-l6-v2": vector}` to single vector
+   - mcp_client.py line 123: Changed search from NamedVector to plain vector
+   - schema.py line 153: Changed embedding_model from "fastembed/all-MiniLM-L6-v2" to "fast-all-minilm-l6-v2"
+4. **Killed old MCP processes**: Successfully killed PIDs 48028, 49748
+5. **Cursor restarted**: User restarted Cursor after fixes
+
+## What's Broken ❌
+
+1. **MCP tools not available in Cursor**:
+   - `mcp_qdrant-cursor-chats_qdrant-store` returns "Tool not found"
+   - Available tools list does NOT include any qdrant MCP tools
+   - Only shows browser-extension MCP tools
+
+2. **MCP resources empty**:
+   - `list_mcp_resources()` returns "No MCP resources found"
+
+3. **Original error** (before fixes):
+   ```
+   Error: Wrong input: Not existing vector name error: fast-all-minilm-l6-v2
+   ```
+
+## What We're Trying to Do
+
+1. **Fix MCP connection** so `qdrant-store` and `qdrant-find` tools become available in Cursor
+2. **Understand why** MCP server processes running but Cursor doesn't see them
+3. **Verify fixes work** by successfully storing a test message
+
+## Context
+
+### Architecture
+```
+Cursor IDE
+  ↓ (MCP Protocol)
+MCP Server (mcp-server-qdrant)
+  ↓ (uses)
+mcp_client.py (our code)
+  ↓ (embeds with)
+fastembed (sentence-transformers/all-MiniLM-L6-v2)
+  ↓ (stores in)
+Qdrant (localhost:6333)
+  └─ Collection: cursor-chats (single vector, dim=384)
+```
+
+### File Locations
+- **MCP client code**: `C:\DEV\src\mcp\mcp_client.py`
+- **Schema builder**: `C:\DEV\libs\cursor_mcp_utils\schema.py`
+- **MCP memory rules**: `C:\DEV\.cursor\rules\_cursor_mcp_memory.mdc`
+- **MCP server exe**: `C:\Users\rtoth\AppData\Local\uv\cache\archive-v0\90M1e2HCwMvkTK9NlaEiM\Scripts\mcp-server-qdrant.exe`
+
+### Key Constraints
+- Collection `cursor-chats` uses **single vector** (not named vectors)
+- Embedding model: `sentence-transformers/all-MiniLM-L6-v2`
+- Vector dimension: 384
+- MCP server installed via `uv` (in cache directory)
+
+## Analysis
+
+### Root Causes Identified
+
+1. **Vector name mismatch** (FIXED):
+   - Code was using `{"fast-all-minilm-l6-v2": vector}` for named vectors
+   - But Qdrant collection uses single unnamed vector
+   - Fixed by changing to plain vector
+
+2. **MCP server code vs local code**:
+   - Fixed LOCAL code in `C:\DEV\src\mcp\mcp_client.py`
+   - But MCP server executable in uv cache might have BUNDLED version
+   - Server may not be using our local fixes
+
+3. **Cursor MCP configuration**:
+   - MCP servers running but Cursor not connecting
+   - Might need configuration in Cursor settings
+   - Or MCP server needs different startup parameters
+
+### Observations
+
+1. **Two MCP server processes**: Why two instances? Should there only be one?
+2. **No MCP resources**: Even simple list_mcp_resources() returns empty
+3. **Browser extension works**: mcp_cursor-browser-extension tools ARE available
+4. **Server executable location**: In uv cache, not in C:\DEV
+
+## Suggested Fixes
+
+### Priority 1: Check if MCP server uses local code
+
+The mcp-server-qdrant executable might have its own bundled Python code, not using our local fixes in C:\DEV\src\mcp\.
+
+**Check:**
+1. Does `mcp-server-qdrant` package need to be updated/reinstalled?
+2. How does it find the mcp_client.py to use?
+3. Does it have environment variable pointing to C:\DEV\src\mcp?
+
+### Priority 2: Cursor MCP configuration
+
+**Check:**
+1. Where is Cursor's MCP config file? (settings.json or similar)
+2. Is qdrant-cursor-chats server properly registered?
+3. Does config point to correct server executable?
+4. Are there logs showing connection attempts/failures?
+
+### Priority 3: Server startup parameters
+
+**Check:**
+1. What command line args is MCP server started with?
+2. Does it need PYTHONPATH or similar to find our code?
+3. Is there a server config file we need to update?
+
+## Improvements to Consider
+
+1. **Make MCP server use local code**:
+   - Set PYTHONPATH to C:\DEV
+   - Or reinstall mcp-server-qdrant in development mode
+
+2. **Add MCP server logging**:
+   - Enable debug logs to see what's happening
+   - Log file location for troubleshooting
+
+3. **Verify collection config**:
+   - Check if cursor-chats needs to be recreated
+   - Confirm vector configuration matches code
+
+4. **Test direct Qdrant access**:
+   - Bypass MCP and test mcp_client.py directly
+   - Verify qdrant_store() function works standalone
+
+## Questions for ChatGPT
+
+1. How does Cursor discover and connect to MCP servers?
+2. Where should mcp-server-qdrant configuration be defined?
+3. Does the uv-cached executable use our local Python files or bundled ones?
+4. Why would MCP servers be running but not show in available tools?
+5. What's the correct way to get MCP server to reload code changes?
+
+## Code Listings
+
+### mcp_client.py (AFTER fixes)
+
+See attached: code/mcp_client.py
+
+Key changes:
+- Line 92: `vector=embeddings[0].tolist()` (was: `vector={"fast-all-minilm-l6-v2": ...}`)
+- Line 123: `query_vector=query_embedding` (was: `query_vector=NamedVector(...)`)
+- Line 115: Removed unused NamedVector import
+
+### schema.py (AFTER fixes)
+
+See attached: code/schema.py
+
+Key change:
+- Line 153: `"embedding_model": "fast-all-minilm-l6-v2"` (was: "fastembed/all-MiniLM-L6-v2")
+
+### _cursor_mcp_memory.mdc (AFTER fixes)
+
+See attached: context/_cursor_mcp_memory.mdc
+
+Key changes:
+- Line 132: Documentation updated to show correct model name
+- Line 265: Example updated to show correct model name
+
+## Expected Outcome
+
+After ChatGPT's analysis and fixes:
+
+1. ✅ Cursor sees `mcp_qdrant-cursor-chats_qdrant-store` tool
+2. ✅ Cursor sees `mcp_qdrant-cursor-chats_qdrant-find` tool
+3. ✅ Can successfully store test message to Qdrant
+4. ✅ No "Wrong input: Not existing vector name" errors
+5. ✅ MCP server logs show successful connections
+6. ✅ Clear documentation on how MCP server finds code
+
+## Testing Plan
+
+1. Apply ChatGPT's fixes
+2. Restart MCP servers (or Cursor)
+3. Run: `list_mcp_resources()` - should show resources
+4. Test storage with minimal metadata
+5. Query Qdrant directly to verify vector stored
+6. Test search functionality
+
+═══════════════════════════════════════════════════════════════
+End of Briefing
+═══════════════════════════════════════════════════════════════
+

@@ -1,0 +1,260 @@
+# Cursor Chat Memory - Production Phase 1 Implementation
+
+## CRITICAL: Maximum Context with Existing Infrastructure
+
+**ALWAYS use production-tested utilities from VMS + new Phase 1 enhancements.**
+
+Every stored message captures:
+- ✅ Content hashing (deduplication) - **REUSES VMS S03_VECT.py**
+- ✅ Deterministic IDs (idempotent upserts) - **NEW Phase 1**
+- ✅ Runtime versions (reproducibility) - **NEW Phase 1**
+- ✅ Git state (branch + commit + dirty) - **NEW Phase 1**
+- ✅ Tool usage tracking - **NEW Phase 1**
+- ✅ Intent classification - **NEW Phase 1**
+- ✅ Full project + file + code context - **EXISTING**
+
+## Utilities Available
+
+Import from `C:\DEV\libs\cursor-mcp-utils`:
+```python
+from cursor_mcp_utils import (
+    hash_content,              # SHA256 content hash
+    iso_utc, unix_timestamp,   # Timestamps
+    generate_upsert_id,        # Deterministic UUID5
+    get_runtime_versions,      # Python, Node, Docker versions
+    get_git_info,              # Branch, commit, dirty flag
+    get_env_context,           # Working dir, shell, env vars
+    detect_project_name        # Project detection from path
+)
+```
+
+## Required Metadata Schema (Phase 1)
+
+```json
+{
+  // ===== CONTENT HASHING (VMS S03_VECT.py) =====
+  "content_sha256": "<hash_content(message_text)>",
+  "upsert_id": "<generate_upsert_id(chat_id, turn_id)>",
+  
+  // ===== AI ATTRIBUTION =====
+  "ai_model": "claude-sonnet-4.5",
+  "ai_provider": "anthropic",
+  "cursor_mode": "chat|composer",
+  
+  // ===== TIMESTAMPS =====
+  "ts": "<iso_utc()>",
+  "unix_timestamp": "<unix_timestamp()>",
+  "date": "YYYY-MM-DD",
+  "time": "HH:MM:SS",
+  
+  // ===== TOOL USAGE (Phase 1) =====
+  "tools_used": [
+    {
+      "name": "qdrant-store",
+      "latency_ms": 123
+    }
+  ],
+  
+  // ===== RUNTIME (Phase 1 - get_runtime_versions()) =====
+  "runtime": {
+    "os": "Windows 11 Pro",
+    "python": "3.11.9",
+    "node": "20.17.0",
+    "docker": "24.0.5",
+    "shell": "powershell"
+  },
+  
+  // ===== PROJECT CONTEXT =====
+  "project": {
+    "root": "C:\\DEV",
+    "name": "<detect_project_name()>",
+    "subproject": "<if nested>",
+    "workspace": "engineering-home.code-workspace",
+    "workspace_fingerprint": "<sha256 of workspace>"
+  },
+  
+  // ===== GIT (Phase 1 - get_git_info()) =====
+  "git": {
+    "branch": "main",
+    "commit": "abc123d",
+    "commit_full": "abc123def...",
+    "dirty": false,
+    "repo_url": "github.com/user/repo",
+    "remote": "https://github.com/user/repo.git"
+  },
+  
+  // ===== FILE CONTEXT (if discussing file) =====
+  "file": {
+    "path": "C:\\DEV\\file.ts",
+    "relative_path": "file.ts",
+    "line": 45,
+    "language": "typescript",
+    "selection": {
+      "start_line": 41,
+      "end_line": 60,
+      "chars": 512
+    }
+  },
+  
+  // ===== CODE CONTEXT (if discussing code) =====
+  "code": {
+    "symbol": "functionName",
+    "type": "function",
+    "scope": "global"
+  },
+  
+  // ===== ENVIRONMENT (get_env_context()) =====
+  "environment": {
+    "working_dir": "C:\\DEV\\backstage",
+    "os": "Windows",
+    "shell": "powershell",
+    "env_vars": {
+      "NODE_ENV": "development"
+    }
+  },
+  
+  // ===== INTENT CLASSIFICATION (Phase 1) =====
+  "intent": "ask|write|refactor|fix|plan|decide",
+  "category": "config|code|bug|decision|architecture|docs|command",
+  "topic": "brief summary",
+  "priority": "high|medium|low",
+  "tags": ["keyword1", "keyword2", "keyword3"],
+  
+  // ===== SESSION INFO =====
+  "role": "user|assistant",
+  "chat_id": "<session-uuid>",
+  "turn_id": 1,
+  "conversation_length": 6
+}
+```
+
+## When to Store
+
+**ALWAYS store when:**
+- Configuration or setup discussed
+- Important decisions made
+- Solutions to problems found
+- Code patterns explained
+- Commands that work
+- Architecture decisions
+- User says "remember", "note", "important"
+
+**Store silently** unless user requests confirmation.
+
+## Storage Implementation
+
+Use these utilities:
+
+```python
+# Generate content hash (VMS S03_VECT.py)
+content_sha256 = hash_content(message_text)
+
+# Generate deterministic ID (Phase 1)
+upsert_id = generate_upsert_id(chat_id, turn_id)
+
+# Get runtime context (Phase 1)
+runtime = get_runtime_versions()
+
+# Get git context (Phase 1)
+git = get_git_info(Path("C:\\DEV"))
+
+# Get environment (Phase 1)
+environment = get_env_context()
+
+# Store with all metadata
+qdrant-store(
+  information=message_text,
+  metadata={...full_schema_above...},
+  collection_name="cursor-chats"
+)
+```
+
+## Deduplication Strategy
+
+**REUSES VMS S03_VECT.py logic:**
+1. Generate `content_sha256` before storing
+2. Check if hash exists in collection (filter by content_sha256)
+3. If exists, skip storage (idempotent)
+4. Use `upsert_id` for same (chat_id, turn_id) → always same Qdrant point ID
+
+## Required Fields (Never Omit)
+
+- `content_sha256` - For deduplication
+- `upsert_id` - For idempotent upserts
+- `ai_model`, `ai_provider` - Attribution
+- `ts`, `unix_timestamp`, `date`, `time` - Timestamps
+- `runtime` - Python, Node, Shell versions
+- `project.root`, `project.name` - Project context
+- `environment.working_dir`, `environment.os` - Environment
+- `intent`, `category`, `tags` - Classification
+- `role`, `chat_id`, `turn_id` - Session tracking
+
+## Optional Fields (Include If Available)
+
+- `git` - Only if in git repository
+- `file` - Only if discussing specific file
+- `code` - Only if discussing specific code
+- `tools_used` - Track which MCP tools were called
+- `selection` - If specific code selection mentioned
+
+## Intent Classification Guide
+
+**ask**: User asking a question  
+**write**: Creating new code/files  
+**refactor**: Modifying existing code  
+**fix**: Fixing bugs or errors  
+**plan**: Planning architecture/approach  
+**decide**: Making decisions
+
+## Category Guide
+
+**config**: Configuration files, settings  
+**code**: Source code, implementation  
+**bug**: Bug fixes, errors  
+**decision**: Architecture/design decisions  
+**architecture**: System design, patterns  
+**docs**: Documentation  
+**command**: CLI commands, scripts  
+
+## Priority Guide
+
+**high**: Important decisions, critical fixes  
+**medium**: Normal work, standard features  
+**low**: Minor notes, trivial changes  
+
+## Collection Info
+
+- Collection: cursor-chats
+- Dimensions: 384 (FastEmbed all-MiniLM-L6-v2)
+- Qdrant: http://localhost:6333
+- Storage: Automatic with full attribution
+- Deduplication: Via content_sha256 (VMS strategy)
+- Idempotent: Via deterministic upsert_id
+
+## Benefits of This Approach
+
+✅ **Reuses VMS production code** - battle-tested hashing, deduplication  
+✅ **Deterministic IDs** - no duplicate storage, idempotent upserts  
+✅ **Full reproducibility** - runtime versions, git state captured  
+✅ **Intent classification** - better search and filtering  
+✅ **Tool tracking** - know which MCP tools were used  
+✅ **Zero reinvention** - builds on existing infrastructure  
+
+## Search Usage
+
+```python
+# Find by content hash (exact duplicate)
+qdrant-find with filter: {"content_sha256": "<hash>"}
+
+# Find by project
+qdrant-find with filter: {"project.name": "backstage"}
+
+# Find by intent
+qdrant-find with filter: {"intent": "decide"}
+
+# Find by git branch
+qdrant-find with filter: {"git.branch": "main"}
+
+# Find by runtime
+qdrant-find with filter: {"runtime.python": "3.11.9"}
+```

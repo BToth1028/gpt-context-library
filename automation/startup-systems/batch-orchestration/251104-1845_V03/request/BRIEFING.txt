@@ -68,7 +68,7 @@ CURRENT STATE
 - ✅ Cleanup (kills all old processes)
 - ✅ Prerequisites check
 - ✅ MkDocs starts
-- ✅ Structurizr starts  
+- ✅ Structurizr starts
 - ✅ Backstage starts
 - ✅ Monitor starts
 - ✅ Browser opening (when script reaches it)

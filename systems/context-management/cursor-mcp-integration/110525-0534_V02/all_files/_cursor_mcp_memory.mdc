@@ -1,0 +1,335 @@
+# Cursor Chat Memory - Schema v1.0.0 (Production)
+
+## CRITICAL: Use Complete Schema v1.0.0
+
+**Every stored message MUST use the COMPLETE metadata schema with ALL 70+ fields.**
+
+Import and use the production schema builder:
+```python
+from cursor_mcp_utils import build_complete_metadata, SCHEMA_VERSION
+```
+
+## Required Schema Fields (70+ total)
+
+### Schema Version
+- `schema_version`: "1.0.0" (ALWAYS include)
+
+### Content Hashing (3 fields)
+- `content_sha256`: SHA256 hash for deduplication
+- `upsert_id`: Deterministic UUID5 from (chat_id, turn_id)
+- `redacted`: Boolean if PII was redacted
+
+### AI Attribution (7 fields)
+- `ai_model`: "claude-sonnet-4.5"
+- `ai_model_version`: "4.5.2025-10-15"
+- `ai_provider`: "anthropic"
+- `ai_provider_region`: "us-east-1"
+- `cursor_mode`: "chat" | "composer"
+- `system_prompt_sha256`: Hash of system prompt
+- `safety_events`: Array of redactions, blocked tools
+
+### Sampling Parameters (3 fields)
+- `sampling.temperature`: 0.7
+- `sampling.top_p`: 0.9
+- `sampling.max_tokens`: 4096
+
+### Token Usage & Cost (5 fields)
+- `token_usage.input`: Input tokens
+- `token_usage.output`: Output tokens
+- `token_usage.total`: Total tokens
+- `latency_ms`: Response latency
+- `cost_usd`: Estimated cost
+
+### Timestamps (4 fields)
+- `ts`: ISO 8601 UTC timestamp
+- `unix_timestamp`: Unix epoch
+- `date`: "YYYY-MM-DD"
+- `time`: "HH:MM:SS"
+
+### Tool Usage (1 array)
+- `tools_used`: [{"name": "qdrant-store", "latency_ms": 123}]
+
+### Runtime Versions (5 fields)
+- `runtime.os`: "Windows 11"
+- `runtime.python`: "3.12.4"
+- `runtime.node`: "20.17.0"
+- `runtime.docker`: "24.0.5"
+- `runtime.shell`: "PowerShell"
+
+### Project Context (5 fields)
+- `project.root`: "C:\\DEV"
+- `project.name`: Detected from path
+- `project.subproject`: If nested
+- `project.workspace`: Workspace file name
+- `project.workspace_fingerprint`: SHA256 of workspace
+
+### Git State (6 fields)
+- `git.branch`: Current branch
+- `git.commit`: Short commit hash
+- `git.commit_full`: Full commit hash
+- `git.dirty`: Boolean if uncommitted changes
+- `git.repo_url`: Repository URL
+- `git.remote`: Remote URL
+
+### File Context (5 fields, optional)
+- `file.path`: Full path
+- `file.relative_path`: Relative to project root
+- `file.line`: Current line number
+- `file.language`: Programming language
+- `file.selection`: {start_line, end_line, chars}
+
+### Code Context (3 fields, optional)
+- `code.symbol`: Function/class name
+- `code.type`: "function" | "class" | "method"
+- `code.scope`: "module" | "local" | "global"
+
+### Environment (4 fields)
+- `environment.working_dir`: Current directory
+- `environment.os`: OS name
+- `environment.shell`: Shell type
+- `environment.env_vars`: Relevant env vars
+
+### Intent & Classification (5 fields)
+- `intent`: "ask" | "write" | "refactor" | "fix" | "plan" | "decide"
+- `category`: "config" | "code" | "bug" | "decision" | "architecture" | "docs" | "command"
+- `topic`: Brief summary
+- `priority`: "high" | "medium" | "low"
+- `tags`: Array of keywords
+
+### Session Info (4 fields)
+- `role`: "user" | "assistant"
+- `chat_id`: Session UUID
+- `turn_id`: Turn number
+- `conversation_length`: Number of turns
+
+### Recent Context (5 fields)
+- `recent_hour_context`: Summary of last hour
+- `window`: "last_1h" | "last_24h"
+- `items_considered`: Count of recent messages
+- `topics`: Array of topics
+- `decisions`: Array of decisions
+- `todos`: Array of todos
+
+### Session/UI Signals (6 fields)
+- `user_id_pseudonymous`: Stable UUID
+- `input_method`: "keyboard" | "voice" | "paste" | "tool"
+- `ui_surface`: "chat" | "inline" | "composer"
+- `keyboard_layout`: Keyboard layout
+- `locale`: "en-US"
+- `timezone`: "America/New_York"
+
+### MCP + Transport (7 fields)
+- `mcp.server`: "mcp-server-qdrant"
+- `mcp.version`: "0.5.2"
+- `mcp.transport`: "sse" | "stdio" | "ws"
+- `mcp.server_instance_id`: Instance UUID
+- `mcp.tool_latency_ms`: {tool_name: latency}
+- `qdrant_write_status`: "ok" | "retry" | "fail"
+- `retry.count`: Number of retries
+- `retry.backoff_ms`: Backoff time
+
+### Vector Specifics (7 fields)
+- `embedding_model`: "fast-all-minilm-l6-v2"
+- `embedding_dim`: 384
+- `similarity_metric`: "cosine" | "dot" | "euclid"
+- `chunking.strategy`: "by_turn"
+- `chunking.max_chars`: 4000
+- `chunking.overlap`: 128
+
+### Content Bookkeeping (4 fields)
+- `content_length`: Length of text
+- `truncated`: Boolean
+- `language`: ISO language code
+- `citations`: Array of {type, value, span}
+
+### Privacy/Compliance (4 fields)
+- `pii_presence`: "none" | "possible" | "confirmed"
+- `retention_policy`: "dev" | "stage" | "prod" | "purge_after_30d"
+- `gdpr_basis`: "consent" | "legitimate_interest" | "contract"
+- `redaction_rules`: {emails: true, secrets: true}
+
+### Dev Environment + LSP (9 fields)
+- `dev_container.active`: Boolean
+- `dev_container.image`: Image name
+- `language_server.name`: "pyright"
+- `language_server.version`: Version string
+- `build_target`: "app" | "lib" | "infra"
+- `test_scope`: Test node ID
+- `commands_ran`: Array of commands
+- `artifacts`: Array of artifacts
+- `guardrails.passed`: Array of passed checks
+- `guardrails.failed`: Array of failed checks
+- `rollback_hint`: Git ref or point ID
+
+## Storage Implementation
+
+**CRITICAL: Call qdrant-store with COMPLETE metadata**
+
+When storing ANY message, you MUST pass ALL available metadata fields from Schema v1.0.0.
+
+**Example with FULL schema:**
+```
+qdrant-store(
+  information="CRITICAL RULE: NEVER save files to C:\DEV root without permission",
+  metadata={
+    "schema_version": "1.0.0",
+    "content_sha256": "a3f8d9c2...",
+    "upsert_id": "uuid5-deterministic",
+    "redacted": false,
+
+    "ai_model": "claude-sonnet-4.5",
+    "ai_model_version": "4.5.2025-10-15",
+    "ai_provider": "anthropic",
+    "ai_provider_region": "us-east-1",
+    "cursor_mode": "chat",
+    "system_prompt_sha256": null,
+    "safety_events": [],
+
+    "sampling": {
+      "temperature": 0.7,
+      "top_p": 0.9,
+      "max_tokens": 4096
+    },
+
+    "token_usage": {
+      "input": 1234,
+      "output": 456,
+      "total": 1690
+    },
+    "latency_ms": 935,
+    "cost_usd": 0.0123,
+
+    "ts": "2025-11-05T12:30:00Z",
+    "unix_timestamp": 1730812200,
+    "date": "2025-11-05",
+    "time": "12:30:00",
+
+    "tools_used": [{"name": "qdrant-store", "latency_ms": 245}],
+
+    "runtime": {
+      "os": "Windows 11",
+      "python": "3.12.4",
+      "node": "20.17.0",
+      "docker": "24.0.5",
+      "shell": "PowerShell"
+    },
+
+    "project": {
+      "root": "C:\\DEV",
+      "name": "engineering-home",
+      "subproject": null,
+      "workspace": "engineering-home.code-workspace"
+    },
+
+    "git": {
+      "branch": "main",
+      "commit": "cfc6057",
+      "commit_full": "cfc6057a3f8d9c2e1b4567890abcdef",
+      "dirty": false,
+      "repo_url": "github.com/user/repo"
+    },
+
+    "environment": {
+      "working_dir": "C:\\DEV",
+      "os": "Windows",
+      "shell": "powershell"
+    },
+
+    "intent": "remember",
+    "category": "rule",
+    "topic": "File organization critical rule",
+    "priority": "critical",
+    "tags": ["file-management", "project-structure", "user-preference", "enforcement"],
+
+    "role": "assistant",
+    "chat_id": "cursor-session-123",
+    "turn_id": 42,
+    "conversation_length": 85,
+
+    "user_id_pseudonymous": "stable-uuid",
+    "input_method": "keyboard",
+    "ui_surface": "chat",
+    "locale": "en-US",
+    "timezone": "America/New_York",
+
+    "mcp": {
+      "server": "mcp-server-qdrant",
+      "version": "0.5.2",
+      "transport": "sse",
+      "server_instance_id": "instance-uuid",
+      "tool_latency_ms": {"qdrant-store": 123}
+    },
+    "qdrant_write_status": "ok",
+    "retry": {"count": 0, "backoff_ms": 0},
+
+    "embedding_model": "fast-all-minilm-l6-v2",
+    "embedding_dim": 384,
+    "similarity_metric": "cosine",
+    "chunking": {
+      "strategy": "by_turn",
+      "max_chars": 4000,
+      "overlap": 128
+    },
+
+    "content_length": 250,
+    "truncated": false,
+    "language": "en",
+    "citations": [],
+
+    "pii_presence": "none",
+    "retention_policy": "dev",
+    "gdpr_basis": "legitimate_interest",
+    "redaction_rules": {"emails": true, "secrets": true},
+
+    "dev_container": {"active": false},
+    "commands_ran": [],
+    "artifacts": [],
+    "guardrails": {"passed": ["naming_regex"], "failed": []}
+  }
+)
+```
+
+## When to Store
+
+**ALWAYS store when:**
+- Configuration or setup discussed
+- Important decisions made
+- Solutions to problems found
+- Code patterns explained
+- Commands that work
+- Architecture decisions
+- User says "remember", "note", "important"
+- Critical rules or preferences stated
+
+**Store silently** unless user requests confirmation.
+
+## CRITICAL Rules
+
+1. **NEVER omit schema_version** - Always "1.0.0"
+2. **NEVER use minimal metadata** - Pass ALL 70+ fields
+3. **NEVER skip attribution** - ai_model, ai_provider, sampling, token_usage
+4. **NEVER skip runtime** - os, python, node, docker, shell
+5. **NEVER skip project context** - root, name
+6. **NEVER skip classification** - intent, category, priority, tags
+7. **ALWAYS include timestamps** - ts, unix_timestamp, date, time
+8. **ALWAYS include MCP info** - server, version, transport
+9. **ALWAYS include vector specs** - embedding_model, dim, metric
+10. **ALWAYS include privacy** - pii_presence, retention_policy, gdpr_basis
+
+## Collection Info
+
+- Collection: cursor-chats
+- Schema: v1.0.0
+- Fields: 70+
+- Qdrant: http://localhost:6333
+- Embedding: Automatic via MCP server
+- Validation: Pre-commit + CI + Runtime
+
+## Benefits
+
+✅ **Complete attribution** - Know exact AI model, version, cost
+✅ **Full reproducibility** - Runtime, git, environment captured
+✅ **Enhanced search** - Filter by any of 70+ fields
+✅ **Compliance ready** - PII tracking, GDPR, retention policies
+✅ **Observability** - MCP health, latency, retry tracking
+✅ **Production tested** - Validated, size-capped, enum-enforced

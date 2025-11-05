@@ -237,3 +237,6 @@ Uses `taskkill /PID <pid> /T /F` to ensure child processes die with parents.
 User is running Windows 11 with PowerShell 7+. They want ONE script that does everything - no separate cleanup scripts. The cleanup logic from ChatGPT V02 was solid but implemented wrong (separate file). We integrated it successfully and got everything working, but then broke it trying to fix the Sourcegraph login persistence issue.
 
 The script is currently in a broken state - it closes early before completing. Need to diagnose and fix.
+
+
+

@@ -1,0 +1,251 @@
+Target path: C:\DEV\docs\gpt\systems\context-management\cursor-mcp-integration\251105-0000_V01\response
+
+===============================================================================
+PROBLEM: Cursor MCP Rich Metadata Not Being Saved
+===============================================================================
+
+STATUS: Utilities tested and working, but actual Qdrant storage missing metadata
+
+WHAT WORKS:
+- Qdrant MCP server connected to Cursor
+- Basic storage/retrieval working via qdrant-store and qdrant-find tools
+- Shared utilities library created with VMS code reuse:
+  * Content hashing (from S03_VECT.py)
+  * Timestamps (from S03_VECT.py)
+  * Deterministic IDs (Phase 1)
+  * Runtime context capture (Phase 1)
+  * Git integration (Phase 1)
+- All utilities unit tested successfully
+- Services running (Qdrant on 6333, Ollama on 11434)
+
+WHAT DOESN'T WORK:
+- AI is NOT using the rich metadata schema when storing
+- Actual Qdrant payload only has {"project": "engineering-home"}
+- Missing ALL the designed metadata fields:
+  * No ai_model, ai_provider
+  * No runtime versions (Python, Node, Docker)
+  * No git info (branch, commit, dirty)
+  * No content_sha256 (deduplication)
+  * No deterministic upsert_id
+  * No intent classification
+  * No tools_used tracking
+  * No comprehensive timestamps
+
+THE GAP:
+We created utilities and documented the schema, but the AI isn't actually 
+using them when calling qdrant-store. The MCP server accepts arbitrary metadata
+but the AI is only passing minimal data.
+
+CURRENT METADATA (What's Actually Stored):
+{
+  "document": "All Phase 1 utilities are working!...",
+  "metadata": {
+    "project": "engineering-home"
+  }
+}
+
+DESIRED METADATA (What We Designed):
+{
+  "document": "...",
+  "metadata": {
+    "ai_model": "claude-sonnet-4.5",
+    "ai_provider": "anthropic",
+    "unix_timestamp": 1762318337,
+    "ts": "2025-11-05T16:30:00Z",
+    "content_sha256": "abc123...",
+    "upsert_id": "deterministic-uuid5",
+    "project": {
+      "root": "C:\\DEV",
+      "name": "engineering-home",
+      "workspace": "engineering-home.code-workspace"
+    },
+    "file": {
+      "path": "C:\\DEV\\...",
+      "relative_path": "...",
+      "line": 42,
+      "language": "python"
+    },
+    "git": {
+      "branch": "main",
+      "commit": "cfc6057",
+      "dirty": true,
+      "repo_url": "..."
+    },
+    "runtime": {
+      "python": "3.12.4",
+      "node": "...",
+      "docker": "...",
+      "shell": "PowerShell"
+    },
+    "environment": {
+      "cwd": "C:\\DEV",
+      "shell_type": "PowerShell"
+    },
+    "intent": "decide",
+    "category": "implementation",
+    "tags": ["phase1", "mcp", "testing"],
+    "tools_used": ["qdrant-store"],
+    "priority": "high",
+    "confidence": 0.95
+  }
+}
+
+ADDITIONAL MISSING FEATURE:
+"Recent hour context" - We documented this but never implemented it.
+The idea: When storing, AI should automatically pull the last hour of 
+conversation history and include a summary in the metadata for better 
+attribution and context.
+
+===============================================================================
+KEY FILES
+===============================================================================
+
+CURSOR RULE (Auto-ingestion):
+- .cursor/rules/_cursor_mcp_memory.mdc
+  (Defines when/how AI should store, includes schema)
+
+UTILITIES LIBRARY:
+- libs/cursor_mcp_utils/__init__.py
+- libs/cursor_mcp_utils/hashing.py (VMS S03_VECT.py reused)
+- libs/cursor_mcp_utils/timestamps.py (VMS S03_VECT.py reused)
+- libs/cursor_mcp_utils/deterministic_ids.py (Phase 1)
+- libs/cursor_mcp_utils/runtime.py (Phase 1)
+
+MCP CONFIG:
+- .cursor/mcp.json (Qdrant server config)
+
+DOCUMENTATION:
+- docs/architecture/integration/cursor-mcp-metadata-schema.md
+- docs/status/IMPLEMENTATION_COMPLETE.md
+- QUICK_START_MCP.md
+
+VMS SOURCE (For Reference):
+- See context/S03_VECT.py for original hashing/timestamp patterns
+
+===============================================================================
+QUESTIONS FOR GPT
+===============================================================================
+
+1. METADATA ENFORCEMENT:
+   How do we make the AI actually USE the rich metadata schema?
+   
+   Options we see:
+   a) Improve the Cursor rule to be more directive
+   b) Create a middleware/wrapper that intercepts qdrant-store calls
+   c) Pre-process via a background script
+   d) Something else?
+
+2. RECENT HOUR CONTEXT:
+   How to implement "pull last hour of chat history and summarize"?
+   
+   - Where does Cursor store chat history?
+   - How to read it programmatically?
+   - Should this be in the Cursor rule or a separate tool?
+   - How to summarize efficiently?
+
+3. IDEMPOTENCY:
+   We have deterministic_ids.generate_upsert_id(chat_id, turn_id).
+   How to ensure the AI uses this for the point ID in Qdrant?
+   (Currently MCP server generates random UUIDs)
+
+4. DEDUPLICATION:
+   We have content_sha256 hashing.
+   Should we:
+   a) Check hash before storing (prevent duplicates)
+   b) Store hash in metadata for post-processing
+   c) Use hash as the point ID instead of deterministic UUID?
+
+5. ARCHITECTURE:
+   Given the MCP server is a black box (mcp-server-qdrant via uvx),
+   what's the best architecture to inject our rich metadata?
+   
+   - Wrap the MCP server?
+   - Pre-process in Cursor rule?
+   - Post-process via webhook/trigger?
+   - Replace MCP server with custom one?
+
+===============================================================================
+CONSTRAINTS
+===============================================================================
+
+- Must work with existing mcp-server-qdrant (can't fork/modify easily)
+- Must reuse VMS code (no reinventing the wheel)
+- Must be automatic (user shouldn't need to manually add metadata)
+- Must be production-ready (handle errors, retries, edge cases)
+- Must preserve existing Qdrant collection (cursor-chats)
+
+===============================================================================
+SUCCESS CRITERIA
+===============================================================================
+
+After implementation:
+
+1. Storage test - Say "Store this: test message"
+   - AI calls qdrant-store with FULL rich metadata
+   - Check Qdrant payload includes ai_model, git, runtime, etc.
+
+2. Retrieval test - Say "Search for: test message"
+   - AI finds the message
+   - Can filter by metadata (project, git branch, intent, etc.)
+
+3. Deduplication test - Store same message twice
+   - Only one point in Qdrant
+   - OR same point ID used (idempotent upsert)
+
+4. Recent context test - Store a message after 1 hour of chat
+   - Metadata includes summary of last hour
+   - Can trace back to conversation thread
+
+5. Attribution test - Can answer:
+   - What AI model stored this?
+   - What was the git commit at the time?
+   - What Python/Node versions were running?
+   - What project/file was open?
+
+===============================================================================
+WHAT WE NEED FROM YOU
+===============================================================================
+
+1. Architecture recommendation
+2. Complete working code for:
+   - Metadata enforcement (however you recommend)
+   - Recent hour context implementation
+   - Idempotent upsert mechanism
+   - Deduplication strategy
+3. Updated Cursor rule (if needed)
+4. Any additional scripts/tools needed
+5. Testing procedures to verify everything works
+
+Be brutal: If we over-engineered something, tell us. If there's a simpler way, 
+show us. We want production-ready, maintainable code.
+
+===============================================================================
+ADDITIONAL CONTEXT
+===============================================================================
+
+USER'S ENVIRONMENT:
+- Windows 11
+- Python 3.12.4
+- PowerShell
+- Git repo: C:\DEV (branch: main, commit: cfc6057, dirty: True)
+- Qdrant: localhost:6333 (Docker)
+- Ollama: localhost:11434 (Docker)
+- Cursor IDE with MCP support
+
+USER'S WORKFLOW:
+- Uses Cursor for coding
+- Uses ChatGPT for complex architecture/consultation
+- Has automated GPT briefing system (this workflow)
+- Has existing Vector Management System (VMS) for iMessage data
+- Wants unified memory across Cursor + iMessage
+
+USER'S STANDARDS:
+- Functional programming style
+- No comments in code unless asked
+- Tabs for indentation
+- Clean, direct code (no unnecessary nesting)
+- Always rewrite full code, not diffs
+- Simplest solution first
+
+===============================================================================
+

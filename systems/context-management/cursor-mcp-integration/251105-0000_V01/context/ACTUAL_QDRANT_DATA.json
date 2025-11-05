@@ -1,0 +1,53 @@
+{
+  "comment": "This is what's ACTUALLY stored in Qdrant right now",
+  "retrieved_from": "http://localhost:6333/collections/cursor-chats/points/scroll",
+  "timestamp": "2025-11-05T04:52:00Z",
+  "points": [
+    {
+      "id": "bdd9357b-4760-43e7-a0bd-3c7601d164d7",
+      "payload": {
+        "document": "All Phase 1 utilities are working! We successfully:\n\n- Reused VMS hashing code\n\n- Implemented deterministic IDs\n\n- Captured runtime versions (Python 3.12.4, Node, Shell)\n\n- Integrated git (branch: main, commit: cfc6057, dirty: True)\n\n- Everything tested and ready!",
+        "metadata": {
+          "project": "engineering-home"
+        }
+      },
+      "comment": "ONLY has project name - missing 95% of designed metadata!"
+    },
+    {
+      "id": "977cd7d4-0067-453e-9e3c-213ceb41a9bc",
+      "payload": {
+        "document": "MCP is working! This is my first stored message from Cursor.",
+        "metadata": {
+          "chat_id": "test-session-001",
+          "turn_id": "1",
+          "role": "assistant",
+          "ts": "2025-11-05T16:00:00Z",
+          "repo": "C:\\DEV",
+          "tags": ["success", "mcp-test", "cursor"]
+        }
+      },
+      "comment": "Earlier test - has more metadata but still missing runtime, git, content hash, etc."
+    },
+    {
+      "id": "382454df-e2fa-4a3d-9cee-94ea960c2dc2",
+      "payload": {
+        "document": "C:\\DEV project main startup script: start-all.bat\nServices and ports:\n- MkDocs: port 8000\n- Backstage: port 3000\n- Sourcegraph: port 7080\n- Qdrant: port 6333\n- Ollama: port 11434\nThis is the user's daily workflow setup.",
+        "metadata": {
+          "type": "project_configuration",
+          "project_path": "C:\\DEV",
+          "startup_script": "start-all.bat",
+          "services": {
+            "mkdocs": 8000,
+            "backstage": 3000,
+            "sourcegraph": 7080,
+            "qdrant": 6333,
+            "ollama": 11434
+          }
+        }
+      },
+      "comment": "Project config - good nested structure but still missing attribution"
+    }
+  ],
+  "problem_summary": "AI is storing minimal metadata. We have utilities for rich metadata but AI isn't using them when calling qdrant-store tool."
+}
+

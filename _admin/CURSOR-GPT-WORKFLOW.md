@@ -1,6 +1,6 @@
 # Cursor ↔ ChatGPT Workflow
 
-**Date:** 2025-11-04  
+**Date:** 2025-11-04
 **Purpose:** Clarify roles and file ownership in the GPT consultation process
 
 ---
@@ -25,7 +25,7 @@
 - This is FOR ChatGPT, not FROM ChatGPT
 
 **Cursor DOES NOT create:**
-- ❌ `GPT_RESPONSE.md` 
+- ❌ `GPT_RESPONSE.md`
 - ❌ Any files in `/response/` folder
 - ❌ Any files that simulate ChatGPT's output
 
@@ -46,9 +46,9 @@
 3. Add header with target path:
    ```markdown
    **Target path:** C:\DEV\docs\gpt\automation\...\response
-   
+
    **Files:** file1.py, file2.bat
-   
+
    [ChatGPT's response here]
    ```
 4. Watcher script (`gpt-response-watcher.ps1`) moves it automatically
@@ -165,6 +165,8 @@ Cursor: ❌ Creates briefing.md AND GPT_RESPONSE.md
 
 ---
 
-**Last Updated:** 2025-11-04  
+**Last Updated:** 2025-11-04
 **Reason:** Clarified after Cursor mistakenly created GPT_RESPONSE.md
+
+
 
