@@ -1,3 +1,7 @@
+**Target path:** C:\DEV\docs\gpt\systems\context-management\dashboard-health-comparison\251105-0847\response
+
+**📋 INSTRUCTIONS:** https://gist.githubusercontent.com/BToth1028/43f7d12d460d93f32da0c71e2faef3bb/raw/cbd9b16d6c150cad5b27dfa020067ec436abd18a/GPT_INSTRUCTIONS.md
+
 ═══════════════════════════════════════════════════════════════
 GPT BRIEFING REQUEST
 ═══════════════════════════════════════════════════════════════
@@ -5,14 +9,9 @@ AI Model: Claude Sonnet 4.5 (Cursor IDE)
 Topic: Dashboard S01 Health - Feature Comparison & Integration Issues
 Date: 2025-11-05
 Time: 08:47
-Version: V01
 Status: Issue
 Category: systems/context-management/dashboard-health-comparison
 ═══════════════════════════════════════════════════════════════
-
-Follow instructions at: https://raw.githubusercontent.com/BToth1028/gpt-context-library/main/_admin/GPT_INSTRUCTIONS.md
-
-**Target path:** C:\DEV\docs\gpt\systems\context-management\dashboard-health-comparison\251105-0847_V01\response
 
 ## Summary
 
@@ -174,7 +173,7 @@ def board_refresher(interval=2):
     if not BOARD_CACHE.get("initialized"):
         BOARD_CACHE["json"] = {"title": "Vector Management", "sections": [], "refresh_ms": 2000}
         BOARD_CACHE["initialized"] = True
-
+    
     # Then do full refresh
     while True:
         t0 = time.time()
@@ -235,7 +234,7 @@ while ((Get-Date) -lt $deadline) {
 ## Code Listings
 
 ### File: dashboard_comprehensive.py (New - 1016 lines)
-[See code/ folder for complete file]
+[See BRIEFING.zip for complete file]
 
 Key sections:
 - Lines 52-120: Helper functions (get_current_log, tail_ndjson, last_event_ts, is_timestamp_fresh)
@@ -245,7 +244,7 @@ Key sections:
 - Lines 1046-1058: JavaScript refresh timestamp update
 
 ### File: MVM_DASH.py (Original - 1849 lines)
-[See references/ folder for complete file]
+[See BRIEFING.zip for complete file]
 
 Key sections:
 - Lines 586-787: build_s01() with full health monitoring
@@ -254,7 +253,7 @@ Key sections:
 - Lines 1451-1463: JavaScript timestamp formatting
 
 ### File: start_dashboard.ps1 (Startup Script)
-[See code/ folder]
+[See BRIEFING.zip for complete file]
 
 Current flow:
 1. Kill previous server by PID
